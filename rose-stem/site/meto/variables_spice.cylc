@@ -6,16 +6,60 @@
 {% do LOG.debug("Entered site/meto/variables_spice.cylc") %}
 
 {% do kgo_vars.update({
-    "lfricinputs_lfric2um-aquaplanet-C48L38_N48L38_spice_gfortran-gcc_safe":        BASE~"_t2337",
-    "lfricinputs_lfric2um-aquaplanet-C48L38_N48L38_spice_ifort-gcc_safe":           BASE~"_t2337",
+    "lfricinputs_lfric2um-aquaplanet-C48L38_N48L38_spice_gfortran-gcc_safe":            BASE,
+    "lfricinputs_lfric2um-aquaplanet-C48L38_N48L38_spice_ifort-gcc_safe":               BASE,
+    "lfricinputs_lfric2um-aquaplanet-C48L38_N48L38_spice_gfortran-gcc_rigorous":        BASE,
+    "lfricinputs_lfric2um-aquaplanet-C48L38_N48L38_spice_ifort-gcc_rigorous":           BASE,
+    "lfricinputs_lfric2um-umlam-C48L70_N512L70_spice_gfortran-gcc_safe":                BASE,
+    "lfricinputs_lfric2um-umlam-C48L70_N512L70_spice_ifort-gcc_safe":                   BASE,
+    "lfricinputs_lfric2um-umlam-C48L70_N512L70_spice_gfortran-gcc_rigorous":            BASE,
+    "lfricinputs_lfric2um-umlam-C48L70_N512L70_spice_ifort-gcc_rigorous":               BASE,
 
-    "lfricinputs_scintelapi-basic-C48L38_C48L38_spice_gfortran-gcc_safe":           BASE~"_t3787",
-    "lfricinputs_scintelapi-basic-C48L38_C48L38_spice_ifort-gcc_safe":              BASE~"_t3787",
+    "lfricinputs_scintelapi-basic-C48L38_C48L38_spice_gfortran-gcc_safe":               BASE,
+    "lfricinputs_scintelapi-basic-C48L38_C48L38_spice_ifort-gcc_safe":                  BASE,
+    "lfricinputs_scintelapi-basic-C48L38_C48L38_spice_gfortran-gcc_rigorous":           BASE,
+    "lfricinputs_scintelapi-basic-C48L38_C48L38_spice_ifort-gcc_rigorous":              BASE,
+    "lfricinputs_scintelapi-basicgal-C12L70-mixingratio_spice_gfortran-gcc_safe":       BASE,
+    "lfricinputs_scintelapi-basicgal-C12L70-mixingratio_spice_ifort-gcc_safe":          BASE,
+    "lfricinputs_scintelapi-basicgal-C12L70-mixingratio_spice_gfortran-gcc_rigorous":   BASE,
+    "lfricinputs_scintelapi-basicgal-C12L70-mixingratio_spice_ifort-gcc_rigorous":      BASE,
 
-    "lfricinputs_um2lfric-falklands_lam_spice_gfortran-gcc_safe":                   BASE~"_t3614",
-    "lfricinputs_um2lfric-falklands_lam_spice_ifort-gcc_safe":                      BASE~"_t3614",
-    "lfricinputs_um2lfric-protogal-N96L70_C12L70_spice_gfortran-gcc_safe":          BASE~"_t4290",
-    "lfricinputs_um2lfric-aquaplanet_lam_spice_gfortran-gcc_safe":                  BASE~"_t3614",
+    "lfricinputs_um2lfric-aquaplanet-N48L38_C48L38_spice_gfortran-gcc_safe":            BASE,
+    "lfricinputs_um2lfric-aquaplanet-N48L38_C48L38_spice_ifort-gcc_safe":               BASE,
+    "lfricinputs_um2lfric-aquaplanet-N48L38_C48L38_spice_gfortran-gcc_rigorous":        BASE,
+    "lfricinputs_um2lfric-aquaplanet-N48L38_C48L38_spice_ifort-gcc_rigorous":           BASE,
+
+    "lfricinputs_um2lfric-basicgal-N96L70_C12L70_spice_gfortran-gcc_safe":              BASE,
+    "lfricinputs_um2lfric-basicgal-N96L70_C12L70_spice_gfortran-gcc_rigorous":          BASE,
+    "lfricinputs_um2lfric-basicgal-N96L70_C12L70_spice_ifort-gcc_safe":                 BASE,
+    "lfricinputs_um2lfric-basicgal-N96L70_C12L70_spice_ifort-gcc_rigorous":             BASE,
+
+    "lfricinputs_um2lfric-protogal-N96L70_C12L70_spice_gfortran-gcc_safe":              BASE,
+    "lfricinputs_um2lfric-protogal-N96L70_C12L70_spice_gfortran-gcc_rigorous":          BASE,
+    "lfricinputs_um2lfric-protogal-N96L70_C12L70_spice_ifort-gcc_safe":                 BASE,
+    "lfricinputs_um2lfric-protogal-N96L70_C12L70_spice_ifort-gcc_rigorous":             BASE,
+
+    "lfricinputs_um2lfric-protogal_chem-N96L70_C12L70_spice_gfortran-gcc_safe":         BASE,
+    "lfricinputs_um2lfric-protogal_chem-N96L70_C12L70_spice_gfortran-gcc_rigorous":     BASE,
+    "lfricinputs_um2lfric-protogal_chem-N96L70_C12L70_spice_ifort-gcc_safe":            BASE,
+    "lfricinputs_um2lfric-protogal_chem-N96L70_C12L70_spice_ifort-gcc_rigorous":        BASE,
+
+    "lfricinputs_um2lfric-aquaplanet_lam_spice_gfortran-gcc_safe":                      BASE,
+    "lfricinputs_um2lfric-aquaplanet_lam_spice_gfortran-gcc_rigorous":                  BASE,
+    "lfricinputs_um2lfric-aquaplanet_lam_spice_ifort-gcc_safe":                         BASE,
+    "lfricinputs_um2lfric-aquaplanet_lam_spice_ifort-gcc_rigorous":                     BASE,
+
+    "lfricinputs_um2lfric-aquaplanet_lbc_spice_gfortran-gcc_safe":                      BASE,
+    "lfricinputs_um2lfric-aquaplanet_lbc_spice_ifort-gcc_safe":                         BASE,
+    "lfricinputs_um2lfric-aquaplanet_lbc_spice_gfortran-gcc_rigorous":                  BASE,
+    "lfricinputs_um2lfric-aquaplanet_lbc_spice_ifort-gcc_rigorous":                     BASE,
+
+    "lfricinputs_um2lfric-falklands_lam_spice_gfortran-gcc_safe":                       BASE,
+    "lfricinputs_um2lfric-falklands_lam_spice_gfortran-gcc_rigorous":                   BASE,
+    "lfricinputs_um2lfric-falklands_lam_spice_ifort-gcc_safe":                          BASE,
+    "lfricinputs_um2lfric-falklands_lam_spice_ifort-gcc_rigorous":                      BASE,
+
+
     }) %}
 
 {% do LOG.debug("Finised in site/meto/variables_spice.cylc") %}

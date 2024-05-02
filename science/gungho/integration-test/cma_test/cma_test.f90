@@ -32,7 +32,9 @@ program cma_test
   use constants_mod,                  only : i_def, r_def, i_def, l_def, &
                                              r_solver, pi, str_def
   use derived_config_mod,             only : set_derived_config
-  use extrusion_mod,                  only : extrusion_type
+  use extrusion_mod,                  only : extrusion_type, &
+                                             uniform_extrusion_type, &
+                                             TWOD
   use mpi_mod,                        only : global_mpi, &
                                              create_comm, destroy_comm
   use field_mod,                      only : field_type
@@ -57,6 +59,8 @@ program cma_test
   use namelist_mod,                   only : namelist_type
 
   use base_mesh_config_mod,           only : GEOMETRY_SPHERICAL
+  use create_mesh_mod,                only : create_mesh
+  use add_mesh_map_mod,               only : assign_mesh_maps
 
   implicit none
 
@@ -88,6 +92,9 @@ program cma_test
   ! Grid spacing in horizontal and vertical
   real   (kind=r_def) :: dx, dz
   character(str_def)  :: base_mesh_names(1)
+  character(str_def), allocatable :: twod_names(:)
+  type(uniform_extrusion_type), allocatable :: extrusion_2d
+
   ! Variables for reading configuration from namelist file
   character(*), parameter ::       &
        required_configuration(6) = &
@@ -274,6 +281,17 @@ program cma_test
                   local_rank, total_ranks,    &
                   base_mesh_names, extrusion, &
                   stencil_depth, check_partitions )
+
+  allocate( twod_names, source=base_mesh_names )
+  do i=1, size(twod_names)
+    twod_names(i) = trim(twod_names(i))//'_2d'
+  end do
+  extrusion_2d = uniform_extrusion_type( 0.0_r_def, &
+                                         0.0_r_def, &
+                                         1_i_def, TWOD )
+  call create_mesh( base_mesh_names, extrusion_2d, &
+                    alt_name=twod_names )
+  call assign_mesh_maps(twod_names)
 
   ! Work out grid spacing, which should be of order 1
   mesh => mesh_collection%get_mesh(prime_mesh_name)

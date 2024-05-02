@@ -55,6 +55,8 @@ module cma_test_algorithm_mod
   use driver_coordinates_mod,         only : assign_coordinate_field
   use finite_element_config_mod,      only : element_order, &
                                              coord_order
+  use extrusion_mod,                  only: TWOD
+  use mesh_collection_mod,            only: mesh_collection
   ! Kernels for field assignment and manipulation
   use enforce_bc_kernel_mod,          only : enforce_bc_kernel_type
   use assign_field_random_kernel_mod, only : assign_field_random_kernel_type
@@ -98,13 +100,15 @@ module cma_test_algorithm_mod
   type( quadrature_rule_gaussian_type ) :: quadrature_rule
   ! Function spaces
   ! Coordinates
-  type(function_space_type), pointer :: fs_coord => null()
+  type(function_space_type), pointer :: fs_coord
   ! Vertical velocity
-  type(function_space_type), pointer :: fs_vel_v => null()
+  type(function_space_type), pointer :: fs_vel_v
   ! Horizontal velocity
-  type(function_space_type), pointer :: fs_vel_h => null()
+  type(function_space_type), pointer :: fs_vel_h
   ! Pressure
-  type(function_space_type), pointer :: fs_pressure => null()
+  type(function_space_type), pointer :: fs_pressure
+  ! Panel_id
+  type(function_space_type), pointer :: fs_panel_id
   ! Fields (temporaries used for testing)
   ! Pressure space
   type(r_solver_field_type) :: p_in,          &
@@ -177,6 +181,7 @@ contains
     type(mesh_type), intent(in), pointer :: mesh_in
 
     ! Local variables
+    type( mesh_type ),  pointer :: twod_mesh
     integer(kind=i_def) :: i
 
     ! Return if module has already been initialised
@@ -199,9 +204,10 @@ contains
                                                  coord_order, &
                                                  chi_space)
 
-    fs_pressure => function_space_collection%get_fs(mesh, 1, W3)
-    call panel_id%initialise(vector_space = fs_pressure, &
-                             halo_depth = mesh%get_halo_depth() )
+    twod_mesh => mesh_collection%get_mesh(mesh, TWOD)
+    fs_panel_id => function_space_collection%get_fs(twod_mesh, 0, W3)
+    call panel_id%initialise(vector_space = fs_panel_id, &
+                             halo_depth = twod_mesh%get_halo_depth() )
 
     fs_coord => function_space_collection%get_fs(mesh, coord_order, Wchi)
 

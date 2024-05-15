@@ -71,7 +71,7 @@
         "mpi_parts": 4704,
         "wallclock": 100,
         "xios_nodes": 22,
-        "mpi_parts_xios" : 392,
+        "mpi_parts_xios" : 396,
         "log_level": "info",
         "plot_str": "plot_map.py $NODAL_DATA_DIR/lfric_gal_diagnostics.nc  $PLOT_DIR",
     }) %}
@@ -250,7 +250,7 @@
         "mpi_parts": 729,
         "wallclock": 25,
         "xios_nodes": 5,
-        "mpi_parts_xios" : 81,
+        "mpi_parts_xios" : 80,
         "log_level": "info",
         "plot_str": "plot_map.py -ral $NODAL_DATA_DIR/lfric_ral_diagnostics.nc  $PLOT_DIR",
     }) %}
@@ -291,7 +291,7 @@
         "mpi_parts": 2560,
         "wallclock": 50,
         "xios_nodes": 20,
-        "mpi_parts_xios" : 365,
+        "mpi_parts_xios" : 360,
         "log_level": "info",
         "plot_str": "plot_map.py -ral $NODAL_DATA_DIR/lfric_ral_diagnostics.nc  $PLOT_DIR",
     }) %}
@@ -336,7 +336,7 @@
         "mpi_parts": 729,
         "wallclock": 25,
         "xios_nodes": 5,
-        "mpi_parts_xios" : 81,
+        "mpi_parts_xios" : 80,
         "log_level": "info",
         "plot_str": "plot_map.py -ral $NODAL_DATA_DIR/lfric_ral_diagnostics.nc  $PLOT_DIR",
     }) %}

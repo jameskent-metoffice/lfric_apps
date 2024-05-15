@@ -20,7 +20,8 @@
 
 {# Generate the script command #}
 {% set script_str = namespace(name="") %}
-{% set script_str.name = "rose task-run --app-key="~task_values["app_name"] %}
+{% set script_str.name = "$CYLC_WORKFLOW_RUN_DIR/bin/application_results_setup.sh ; " %}
+{% set script_str.name = script_str.name~"rose task-run --app-key="~task_values["app_name"] %}
 {% if task_values["app_name"] == "canned_test" %}
     {% set script_str.name = script_str.name~" --command-key=$RUN_METHOD" %}
 {% else %}
@@ -44,9 +45,9 @@
 {% set canned_prescript = "cp -r $SOURCE_DIRECTORY/"~task_values["example_dir"]~"/* "~
                           "$CYLC_TASK_WORK_DIR" %}
 
-
 {# Set the post script command - should be a list of strings #}
 {% set post_script_commands = [
+    '# Create results directory, if not already created.',
     'mkdir -p $TASK_OUTPUT_DIR/results/',
     'RELATIVE_LOG_ROOT=$(echo $CYLC_TASK_LOG_ROOT | sed "s|$HOME/||")',
     'echo $RELATIVE_LOG_ROOT > $TASK_OUTPUT_DIR/run.log.path',
@@ -58,18 +59,6 @@
         task_values["app_name"]~'-checksums.txt $TASK_OUTPUT_DIR/checksum.txt',
     'touch $CYLC_TASK_WORK_DIR/tmp.m',
     'mv $CYLC_TASK_WORK_DIR/*.m $TASK_OUTPUT_DIR/results',
-    'test -f $CYLC_TASK_WORK_DIR/lfric_diag.nc && '~
-        'cp $CYLC_TASK_WORK_DIR/lfric_diag.nc $TASK_OUTPUT_DIR/results || true',
-    'test -f $CYLC_TASK_WORK_DIR/lfric_gal_diagnostics.nc && '~
-        'cp $CYLC_TASK_WORK_DIR/lfric_gal_diagnostics.nc $TASK_OUTPUT_DIR/results || true',
-    'test -f $CYLC_TASK_WORK_DIR/lfric_ral_diagnostics.nc && '~
-        'cp $CYLC_TASK_WORK_DIR/lfric_ral_diagnostics.nc $TASK_OUTPUT_DIR/results || true',
-    'test -f $CYLC_TASK_WORK_DIR/lfric_initial.nc '~
-        '&& mv $CYLC_TASK_WORK_DIR/lfric_initial.nc '~
-        '$TASK_OUTPUT_DIR/results || true',
-    'test -f $CYLC_TASK_WORK_DIR/lfric_averages.nc && '~
-        'cp $CYLC_TASK_WORK_DIR/lfric_averages.nc '~
-        '$TASK_OUTPUT_DIR/results || true',
     'test -f $CYLC_TASK_WORK_DIR/timer.txt && '~
         'cp $CYLC_TASK_WORK_DIR/timer.txt $TASK_OUTPUT_DIR || true'
     ] %}

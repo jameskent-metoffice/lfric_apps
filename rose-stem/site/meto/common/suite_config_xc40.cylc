@@ -30,6 +30,7 @@
             HYPERTHREADS    = 1
             CORES_PER_NODE  = 36
             NUMA_REGIONS_PER_NODE = 2
+            LUSTRE_FILESYSTEM = true
 
     [[XC40_SHARED_QUEUE]]
         [[[environment]]]

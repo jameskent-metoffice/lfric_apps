@@ -33,7 +33,7 @@ module tl_si_timestep_alg_mod
                                          reference_reset_freq
   use timestepping_config_mod,     only: alpha,                                &
                                          outer_iterations, inner_iterations,   &
-                                         spinup_period, spinup_alpha
+                                         spinup_alpha
   use transport_config_mod,        only: use_density_predictor
   use derived_config_mod,          only: bundle_size
   use boundaries_config_mod,       only: limited_area

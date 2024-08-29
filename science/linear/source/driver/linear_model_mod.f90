@@ -11,7 +11,6 @@ module linear_model_mod
   use field_mod,                  only : field_type
   use field_collection_mod,       only : field_collection_type
   use gungho_modeldb_mod,         only : modeldb_type
-  use model_clock_mod,            only : model_clock_type
   use tl_rk_alg_timestep_mod,     only : tl_rk_alg_init, &
                                          tl_rk_alg_final
   use tl_si_timestep_alg_mod,     only : tl_semi_implicit_alg_init, &

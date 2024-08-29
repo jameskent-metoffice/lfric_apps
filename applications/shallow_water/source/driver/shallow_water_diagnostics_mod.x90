@@ -17,7 +17,6 @@ module shallow_water_diagnostics_mod
   use field_collection_mod,              only: field_collection_type
   use log_mod,                           only: log_event, LOG_LEVEL_INFO
   use mesh_mod,                          only: mesh_type
-  use model_clock_mod,                   only: model_clock_type
   use diagnostics_io_mod,                only: write_scalar_diagnostic, &
                                                write_vector_diagnostic
   use shallow_water_settings_config_mod, only: thermal_swe

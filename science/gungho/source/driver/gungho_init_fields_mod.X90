@@ -71,7 +71,6 @@ module gungho_init_fields_mod
   use field_mapper_mod,                   only : field_mapper_type
   use section_choice_config_mod,          only : cloud, cloud_none
   use map_fd_to_prognostics_alg_mod,      only : map_fd_to_prognostics
-  use model_clock_mod,                    only : model_clock_type
   use gungho_init_prognostics_driver_mod, only : init_gungho_prognostics
   use init_gungho_lbcs_alg_mod,           only : init_lbcs_file_alg,    &
                                                  init_lbcs_analytic_alg

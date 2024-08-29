@@ -23,7 +23,6 @@ module shallow_water_driver_mod
                                            LOG_LEVEL_INFO
   use mesh_collection_mod,           only: mesh_collection
   use mesh_mod,                      only: mesh_type
-  use model_clock_mod,               only: model_clock_type
   use runtime_constants_mod,         only: final_runtime_constants
   use shallow_water_diagnostics_mod, only: shallow_water_diagnostics
   use shallow_water_model_mod,       only: initialise_infrastructure, &

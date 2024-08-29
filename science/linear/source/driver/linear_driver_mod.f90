@@ -47,7 +47,6 @@ module linear_driver_mod
   use linear_data_algorithm_mod,  only : update_ls_file_alg
   use mesh_mod,                   only : mesh_type
   use mesh_collection_mod,        only : mesh_collection
-  use model_clock_mod,            only : model_clock_type
   use namelist_mod,               only : namelist_type
   use create_tl_prognostics_mod,  only : create_tl_prognostics
 

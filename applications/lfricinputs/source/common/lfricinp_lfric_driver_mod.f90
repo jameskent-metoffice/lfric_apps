@@ -240,7 +240,7 @@ CALL chi_inventory%get_field_array(mesh, chi)
 CALL panel_id_inventory%get_field(mesh, panel_id)
 model_calendar = step_calendar_type(time_origin, start_date)
 model_clock = model_clock_type( first_step, last_step, seconds_per_step, &
-                                spinup_period )
+                                MAX(spinup_period, 0.0_r_second) )
 
 allocate( io_context )
 file_list => io_context%get_filelist()

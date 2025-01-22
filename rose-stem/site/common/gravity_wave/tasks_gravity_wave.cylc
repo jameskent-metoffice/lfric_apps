@@ -36,6 +36,18 @@
         "plot_str": "slices.py diagGravityWave $NODAL_DATA_DIR buoyancy:wind:pressure T000200 150 0 6 $PLOT_DIR",
     }) %}
 
+{% elif task_ns.conf_name == "p1_75x4-BiP75x4-4000x2000" %}
+
+    {% do task_dict.update({
+        "opt_confs": ["p1_75x4"],
+        "resolution": "BiP75x4-4000x2000",
+        "DT": 10,
+        "tsteps": 200,
+        "wallclock": 15,
+        "use_xios": false,
+        "plot_str": "slices.py diagGravityWave $NODAL_DATA_DIR buoyancy:wind:pressure T000200 150 0 6 $PLOT_DIR",
+    }) %}
+
 {% elif task_ns.conf_name == "limited_spherical_50x50_LAM50x50-2x2" %}
 
     {% do task_dict.update({

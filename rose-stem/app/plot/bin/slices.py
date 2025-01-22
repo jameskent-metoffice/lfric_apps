@@ -79,7 +79,7 @@ def make_figure(plotpath, field, component, timestep,
     xi, yi = np.meshgrid(x2d, y2d)
     for p in range(len(levels)):
         pp = int(l2h[p])
-        p_data = data.loc[data['level'] == levels[p]]
+        p_data = data.loc[data['level'] == levels[pp]]
         zi[:, :, p] = griddata((p_data['x'].values, p_data['y'].values),
                                p_data[val_col].values, (xi, yi),
                                method='linear')

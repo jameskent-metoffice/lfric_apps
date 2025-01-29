@@ -130,7 +130,6 @@
 {# TODO: Squash this group in tickets #517 + #518 #}
 {% do site_groups.update({
     "non_working_group": [
-        "lfric_atm_nwp_gal9_da-C12_ex1a_cce_fast-debug-64bit",
     ]
     }) %}
 

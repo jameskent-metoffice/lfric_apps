@@ -334,6 +334,7 @@
         "lfric_atm_nwp_gal9-C48_MG_ex1a_cce_fast-debug-64bit",
         "lfric_atm_nwp_gal9_coarse_aero-C48_MG_ex1a_cce_fast-debug-64bit",
         "lfric_atm_nwp_gal9_ls_and_jedi-C12_ex1a_cce_fast-debug-64bit",
+        "lfric_atm_nwp_gal9_da-C12_ex1a_cce_fast-debug-64bit",
         "lfric_atm_nwp_gal9_debug-C48_MG_ex1a_gnu_full-debug-64bit",
         "lfric_atm_nwp_casim-C12_ex1a_cce_fast-debug-64bit",
         "lfric_atm_nwp_coma9-C12_ex1a_cce_fast-debug-64bit",

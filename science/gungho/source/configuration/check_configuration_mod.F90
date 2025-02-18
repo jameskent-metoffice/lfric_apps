@@ -575,12 +575,14 @@ contains
       if ( check_any_hori_scheme_ffsl()                                        &
            .and. geometry == geometry_spherical                                &
            .and. topology == topology_fully_periodic                           &
-           .and. MOD(modeldb%mpi%get_comm_size(), 6_i_def) /= 0_i_def ) then
+           .and. (MOD(modeldb%mpi%get_comm_size(), 6_i_def) /= 0_i_def         &
+                  .and. modeldb%mpi%get_comm_size() > 1_i_def) ) then
 
         call log_event(                                                        &
           'Horizontal FFSL transport for the cubed-sphere currently requires ' &
           // 'the number of MPI parts to be a multiple of 6, so that the '     &
           // 'domain is partitioned separately for each panel of the mesh. '   &
+          // 'Alternatively a single MPI part can be used. '                   &
           // 'Please try again with an appropriate parallel decomposition.',   &
           LOG_LEVEL_ERROR                                                      &
         )

@@ -54,6 +54,7 @@ module flux_precomputations_alg_mod
                                             log_level
   use mesh_mod,                       only: mesh_type
   use mesh_collection_mod,            only: mesh_collection
+  use mpi_mod,                        only: global_mpi
   use psykal_lite_transport_mod,      only: invoke_deep_shift_mass,            &
                                             invoke_deep_X_divideby_Y,          &
                                             invoke_deep_X_times_Y
@@ -1528,7 +1529,9 @@ contains
 
     ! On the cubed sphere, x and y directions may swap at panel boundaries
     ! Swap the values in the halos to take this into account
-    if (topology == topology_fully_periodic .AND. geometry == geometry_spherical) then
+    if (topology == topology_fully_periodic                                    &
+        .AND. geometry == geometry_spherical                                   &
+        .AND. global_mpi%get_comm_size() > 1) then
       panel_id => get_panel_id(mesh_id)
       call invoke( ffsl_panel_swap_kernel_type(                                &
                             self%ref_mass_x(mesh_idx, step_idx),               &

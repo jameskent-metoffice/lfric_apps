@@ -20,6 +20,7 @@ module ffsl_hori_alg_mod
   use integer_field_mod,                only: integer_field_type
   use log_mod,                          only: log_event, LOG_LEVEL_ERROR
   use mesh_mod,                         only: mesh_type
+  use mpi_mod,                          only: global_mpi
   use r_tran_field_mod,                 only: r_tran_field_type
   use timer_mod,                        only: timer
 
@@ -51,6 +52,7 @@ module ffsl_hori_alg_mod
   use ffsl_flux_xy_kernel_mod,          only: ffsl_flux_xy_kernel_type
   use ffsl_flux_xy_spt_kernel_mod,      only: ffsl_flux_xy_spt_kernel_type
   use ffsl_flux_xy_first_kernel_mod,    only: ffsl_flux_xy_first_kernel_type
+  use ffsl_flux_xy_1rank_kernel_mod,    only: ffsl_flux_xy_1rank_kernel_type
   use ffsl_panel_swap_kernel_mod,       only: ffsl_panel_swap_kernel_type
   use ffsl_unify_flux_kernel_mod,       only: ffsl_unify_flux_kernel_type
   use fv_difference_x_kernel_mod,       only: fv_difference_x_kernel_type
@@ -554,6 +556,7 @@ contains
     logical(kind=l_def) :: to_compute_field_np1
     integer(kind=i_def) :: extra_points
     logical(kind=l_def) :: outer
+    logical(kind=l_def) :: single_rank
 
     ! Get pre-computed objects and set pointers --------------------------------
     mesh_id = field_x%get_mesh_id()
@@ -683,7 +686,9 @@ contains
 
     if ( subroutine_timers ) call timer('transport.ffsl_hori_sweeps')
 
-    if (topology == topology_fully_periodic .AND. geometry == geometry_spherical) then
+    if (topology == topology_fully_periodic                                    &
+        .and. geometry == geometry_spherical                                   &
+        .and. global_mpi%get_comm_size() > 1) then
       halo_depth = min(mesh%get_halo_depth(), cfl_stencil_xy)
       call invoke( ffsl_panel_swap_kernel_type(remap_field_x, remap_field_y,   &
                                                panel_id_x, halo_depth) )
@@ -694,7 +699,25 @@ contains
     ! (a) equation form, (b) FFSL splitting and (c) special edge treatment
     ! For consistent equation form, use dry mass instead of detj
     ! For consistent equation form, splittings do not need distinguishing as
-    ! the correct support fields (e.g. dry mass) should already be pointed to
+    ! the correct support fields (e.g. dry mass) should already be pointed to.
+    ! Additionally there is a special unoptimised kernel for transport on the
+    ! cubed-sphere when using only a single MPI rank. This is only implemented
+    ! for our current target configuration, and will throw an error in other
+    ! circumstances
+    single_rank = (geometry == geometry_spherical                              &
+                   .and. topology == topology_fully_periodic                   &
+                   .and. global_mpi%get_comm_size() == 1)
+
+    if (single_rank .and. (first_order_cheap_update                            &
+                           .or. .not. swift_splitting                          &
+                           .or. .not. special_edges_treatment)) then
+      call log_event(                                                          &
+              'FFSL on single rank cubed-sphere only implemented for SWIFT' // &
+              ' splitting and special edge treatment, and not cheap_update',   &
+              LOG_LEVEL_ERROR                                                  &
+      )
+    end if
+
     if (first_order_cheap_update) then
       call invoke( setval_c(flux, 0.0_r_tran),                                 &
                    ffsl_flux_xy_first_kernel_type(                             &
@@ -704,6 +727,27 @@ contains
                                              frac_flux_xy,                     &
                                              face_selector_ew,                 &
                                              face_selector_ns, dt ) )
+
+    else if (single_rank) then
+      ! @TODO #39: it is against the spirit of PSyclone to have a single rank
+      ! implementation of a kernel! This will hopefully be removed by the
+      ! rewrite of the horizontal FFSL kernels
+      call invoke( setval_c(flux, 0.0_r_tran),                                 &
+                   ffsl_flux_xy_1rank_kernel_type(                             &
+                                             flux,                             &
+                                             remap_field_y, stencil_extent_xy, &
+                                             dry_mass_y, stencil_extent_xy,    &
+                                             remap_field_x, stencil_extent_xy, &
+                                             dry_mass_x, stencil_extent_xy,    &
+                                             dep_dist_xy, frac_flux_xy,        &
+                                             panel_id_y, stencil_extent_xy,    &
+                                             panel_id_x, stencil_extent_xy,    &
+                                             face_selector_ew,                 &
+                                             face_selector_ns,                 &
+                                             special_edges_high_order, order,  &
+                                             monotone, special_edges_monotone, &
+                                             min_val, cfl_stencil_xy, dt ) )
+
     else if (special_edges_treatment .and.                                     &
              (swift_splitting .or. equation_form == equation_form_consistent)) then
       ! Special edge treatment ------------------------------------------------
@@ -770,6 +814,7 @@ contains
                                              monotone, min_val,                &
                                              cfl_stencil_xy, dt ) )
     end if
+
     if ( subroutine_timers ) call timer('transport.ffsl_hori_sweeps')
 
     ! fluxes may need unifying to guarantee a unique flux for each face --------
@@ -1085,6 +1130,7 @@ contains
                                             cfl_stencil_xy, step_dt ) )
 
     end if
+
     if ( subroutine_timers ) call timer('transport.ffsl_hori_sweeps')
 
     ! fluxes may need unifying to guarantee a unique flux for each face --------

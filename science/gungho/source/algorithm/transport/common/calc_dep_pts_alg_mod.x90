@@ -26,6 +26,7 @@ module calc_dep_pts_alg_mod
                                                LOG_LEVEL_DEBUG,         &
                                                LOG_LEVEL_ERROR
   use mesh_mod,                          only: mesh_type
+  use mpi_mod,                           only: global_mpi
   use r_tran_field_mod,                  only: r_tran_field_type
   use timer_mod,                         only: timer
 
@@ -76,6 +77,8 @@ module calc_dep_pts_alg_mod
   use hori_dep_dist_trapezoidal_kernel_mod, &
                                          only: hori_dep_dist_trapezoidal_kernel_type
   use hori_dep_dist_ffsl_kernel_mod,     only: hori_dep_dist_ffsl_kernel_type
+  use hori_dep_dist_ffsl_1rank_kernel_mod,     &
+                                         only: hori_dep_dist_ffsl_1rank_kernel_type
   use vert_dep_dist_boundary_kernel_mod, only: vert_dep_dist_boundary_kernel_type
   use vert_dep_dist_ffsl_kernel_mod,     only: vert_dep_dist_ffsl_kernel_type
   use vert_dep_dist_exponential_kernel_mod, &
@@ -91,7 +94,8 @@ module calc_dep_pts_alg_mod
   use sci_geometric_constants_mod,       only: get_height,              &
                                                get_face_selector_ew,    &
                                                get_face_selector_ns,    &
-                                               get_detj_at_w2
+                                               get_detj_at_w2,          &
+                                               get_panel_id
 
   implicit none
 
@@ -316,6 +320,9 @@ contains
   subroutine calc_ffsl_hori_dep_pts(dep_dist, frac_wind, max_stencil_extent,   &
                                     wind, detj_for_x, detj_for_y)
 
+    use base_mesh_config_mod, only: geometry, geometry_spherical,              &
+                                    topology, topology_fully_periodic
+
     implicit none
 
     ! Arguments
@@ -328,6 +335,8 @@ contains
 
     ! Internal variables
     type(mesh_type),           pointer :: mesh
+    type(field_type),          pointer :: panel_id_x
+    type(field_type),          pointer :: panel_id_y
     type(integer_field_type),  pointer :: face_selector_ew
     type(integer_field_type),  pointer :: face_selector_ns
     type(integer_field_type)           :: error_flag_field
@@ -335,6 +344,7 @@ contains
     integer(kind=i_def)                :: stencil_extent
     integer(kind=i_def)                :: cfl_stencil_extent
     logical(kind=l_def)                :: cap_dep_points
+    logical(kind=l_def)                :: single_rank
     real(kind=r_tran)                  :: dep_min, dep_max
 
     mesh => wind%get_mesh()
@@ -347,21 +357,50 @@ contains
     cfl_stencil_extent = stencil_extent
     cap_dep_points = (horizontal_limit == horizontal_limit_cap)
 
-    call invoke( setval_c(frac_wind, 0.0_r_tran),                              &
-                 setval_c(dep_dist, 0.0_r_tran),                               &
-                 int_setval_c(error_flag_field, 0_i_def),                      &
-                 hori_dep_dist_ffsl_kernel_type(dep_dist,                      &
-                                                frac_wind,                     &
-                                                wind,                          &
-                                                detj_for_x,                    &
-                                                stencil_extent,                &
-                                                detj_for_y,                    &
-                                                stencil_extent,                &
-                                                face_selector_ew,              &
-                                                face_selector_ns,              &
-                                                error_flag_field,              &
-                                                cfl_stencil_extent,            &
-                                                cap_dep_points) )
+    single_rank = (geometry == geometry_spherical                              &
+                   .and. topology == topology_fully_periodic                   &
+                   .and. global_mpi%get_comm_size() == 1)
+
+    if (single_rank) then
+      panel_id_x => get_panel_id(mesh%get_id())
+      panel_id_y => get_panel_id(mesh%get_id())
+      call invoke( setval_c(frac_wind, 0.0_r_tran),                            &
+                   setval_c(dep_dist, 0.0_r_tran),                             &
+                   int_setval_c(error_flag_field, 0_i_def),                    &
+                   hori_dep_dist_ffsl_1rank_kernel_type(                       &
+                                                  dep_dist,                    &
+                                                  frac_wind,                   &
+                                                  wind,                        &
+                                                  detj_for_x,                  &
+                                                  stencil_extent,              &
+                                                  detj_for_y,                  &
+                                                  stencil_extent,              &
+                                                  panel_id_x,                  &
+                                                  stencil_extent,              &
+                                                  panel_id_y,                  &
+                                                  stencil_extent,              &
+                                                  face_selector_ew,            &
+                                                  face_selector_ns,            &
+                                                  error_flag_field,            &
+                                                  cfl_stencil_extent,          &
+                                                  cap_dep_points) )
+    else
+      call invoke( setval_c(frac_wind, 0.0_r_tran),                            &
+                   setval_c(dep_dist, 0.0_r_tran),                             &
+                   int_setval_c(error_flag_field, 0_i_def),                    &
+                   hori_dep_dist_ffsl_kernel_type(dep_dist,                    &
+                                                  frac_wind,                   &
+                                                  wind,                        &
+                                                  detj_for_x,                  &
+                                                  stencil_extent,              &
+                                                  detj_for_y,                  &
+                                                  stencil_extent,              &
+                                                  face_selector_ew,            &
+                                                  face_selector_ns,            &
+                                                  error_flag_field,            &
+                                                  cfl_stencil_extent,          &
+                                                  cap_dep_points) )
+    end if
 
     ! @TODO #416: Here we could instead take *local* min/max values.
     ! This would mean that each rank would perform the halo exchange to the

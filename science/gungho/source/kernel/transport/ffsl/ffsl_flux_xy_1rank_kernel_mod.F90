@@ -1,10 +1,12 @@
 !-----------------------------------------------------------------------------
-! (c) Crown copyright 2024 Met Office. All rights reserved.
+! (c) Crown copyright 2025 Met Office. All rights reserved.
 ! The file LICENCE, distributed with this code, contains details of the terms
 ! under which the code may be used.
 !-----------------------------------------------------------------------------
 !> @brief Calculates the horizontal mass flux for FFSL, with special treatment
-!!       at edges of cubed-sphere panels.
+!!       at edges of cubed-sphere panels. This is intended for only a single
+!!       MPI rank, as if-checks are embedded deep in the code to identify when
+!!       a calculation has crossed particular panel boundaries.
 !> @details This kernel computes the flux in the x and y directions. A choice of
 !!          constant, Nirvana, or PPM is used to compute the edge reconstruction.
 !!          This is multiplied by the fractional velocity to give
@@ -18,7 +20,7 @@
 !!       it is assumed that ndf_w3 = 1 with stencil_map(1,:) containing the
 !!       relevant dofmaps.
 
-module ffsl_flux_xy_spt_kernel_mod
+module ffsl_flux_xy_1rank_kernel_mod
 
   use argument_mod,          only : arg_type,                  &
                                     GH_FIELD, GH_REAL,         &
@@ -42,7 +44,7 @@ module ffsl_flux_xy_spt_kernel_mod
   ! Public types
   !-------------------------------------------------------------------------------
   !> The type declaration for the kernel. Contains the metadata needed by the PSy layer
-  type, public, extends(kernel_type) :: ffsl_flux_xy_spt_kernel_type
+  type, public, extends(kernel_type) :: ffsl_flux_xy_1rank_kernel_type
     private
     type(arg_type) :: meta_args(18) = (/                                       &
          arg_type(GH_FIELD,  GH_REAL,    GH_WRITE, ANY_DISCONTINUOUS_SPACE_2), & ! flux
@@ -68,17 +70,17 @@ module ffsl_flux_xy_spt_kernel_mod
          /)
     integer :: operates_on = CELL_COLUMN
   contains
-    procedure, nopass :: ffsl_flux_xy_spt_code
+    procedure, nopass :: ffsl_flux_xy_1rank_code
   end type
 
   !-------------------------------------------------------------------------------
   ! Contained functions/subroutines
   !-------------------------------------------------------------------------------
-  public :: ffsl_flux_xy_spt_code
+  public :: ffsl_flux_xy_1rank_code
 
 contains
 
-  !> @brief Compute the horizontal fluxes for FFSL.
+  !> @brief Compute the horizontal fluxes for FFSL, on a single MPI rank.
   !> @param[in]     nlayers             Number of layers
   !> @param[in,out] flux                The output flux
   !> @param[in]     field_for_x         Field to use in evaluating x-flux
@@ -127,49 +129,49 @@ contains
   !> @param[in]     ndf_w3_2d           Num of DoFs for 2D W3 per cell
   !> @param[in]     undf_w3_2d          Num of DoFs for this partition for 2D W3
   !> @param[in]     map_w3_2d           Map for 2D W3
-  subroutine ffsl_flux_xy_spt_code( nlayers,             &
-                                    flux,                &
-                                    field_for_x,         &
-                                    stencil_size_x,      &
-                                    stencil_map_x,       &
-                                    dry_mass_for_x,      &
-                                    stencil_size_mass_x, &
-                                    stencil_map_mass_x,  &
-                                    field_for_y,         &
-                                    stencil_size_y,      &
-                                    stencil_map_y,       &
-                                    dry_mass_for_y,      &
-                                    stencil_size_mass_y, &
-                                    stencil_map_mass_y,  &
-                                    dep_dist,            &
-                                    frac_dry_flux,       &
-                                    panel_id_x,          &
-                                    stencil_size_px,     &
-                                    stencil_map_px,      &
-                                    panel_id_y,          &
-                                    stencil_size_py,     &
-                                    stencil_map_py,      &
-                                    face_selector_ew,    &
-                                    face_selector_ns,    &
-                                    high_order_edges,    &
-                                    order,               &
-                                    monotone,            &
-                                    edge_monotone,       &
-                                    min_val,             &
-                                    extent_size,         &
-                                    dt,                  &
-                                    ndf_w2h,             &
-                                    undf_w2h,            &
-                                    map_w2h,             &
-                                    ndf_w3,              &
-                                    undf_w3,             &
-                                    map_w3,              &
-                                    ndf_pid,             &
-                                    undf_pid,            &
-                                    map_pid,             &
-                                    ndf_w3_2d,           &
-                                    undf_w3_2d,          &
-                                    map_w3_2d )
+  subroutine ffsl_flux_xy_1rank_code( nlayers,             &
+                                      flux,                &
+                                      field_for_x,         &
+                                      stencil_size_x,      &
+                                      stencil_map_x,       &
+                                      dry_mass_for_x,      &
+                                      stencil_size_mass_x, &
+                                      stencil_map_mass_x,  &
+                                      field_for_y,         &
+                                      stencil_size_y,      &
+                                      stencil_map_y,       &
+                                      dry_mass_for_y,      &
+                                      stencil_size_mass_y, &
+                                      stencil_map_mass_y,  &
+                                      dep_dist,            &
+                                      frac_dry_flux,       &
+                                      panel_id_x,          &
+                                      stencil_size_px,     &
+                                      stencil_map_px,      &
+                                      panel_id_y,          &
+                                      stencil_size_py,     &
+                                      stencil_map_py,      &
+                                      face_selector_ew,    &
+                                      face_selector_ns,    &
+                                      high_order_edges,    &
+                                      order,               &
+                                      monotone,            &
+                                      edge_monotone,       &
+                                      min_val,             &
+                                      extent_size,         &
+                                      dt,                  &
+                                      ndf_w2h,             &
+                                      undf_w2h,            &
+                                      map_w2h,             &
+                                      ndf_w3,              &
+                                      undf_w3,             &
+                                      map_w3,              &
+                                      ndf_pid,             &
+                                      undf_pid,            &
+                                      map_pid,             &
+                                      ndf_w3_2d,           &
+                                      undf_w3_2d,          &
+                                      map_w3_2d )
 
     use subgrid_horizontal_support_mod, only: horizontal_nirvana_case,     &
                                               horizontal_ppm_case,         &
@@ -241,6 +243,7 @@ contains
     integer(kind=i_def) :: k, j, idx_3d
     integer(kind=i_def) :: stencil_half, lam_edge_size, recon_size
     integer(kind=i_def) :: mono_option
+    integer(kind=i_def) :: owned_panel, panel_edge
 
     ! Reals
     real(kind=r_tran)   :: displacement, frac_dist
@@ -273,6 +276,10 @@ contains
     end if
     allocate(field_local(recon_size))
     allocate(ipanel_local(recon_size))
+
+    ! panel_id_x and panel_id_y are identical fields, so we can use either to
+    ! determine the panel for this column
+    owned_panel = INT(panel_id_x(map_pid(1)), i_def)
 
     ! Get size the stencil should be to check if we are at the edge of a LAM domain
     lam_edge_size = 2_i_def*extent_size+1_i_def
@@ -338,9 +345,18 @@ contains
             stencil_idx = 1 + ABS(rel_idx) + (stencil_half - 1)*(1 - SIGN(1, -rel_idx))/2
 
             col_idx = stencil_map_x(1,stencil_idx)
+            pid_idx = stencil_map_px(1,stencil_idx)
 
-            int_mass = int_mass + field_for_x(col_idx + k) * dry_mass_for_x(col_idx + k)
-
+            ! Compute mass over integer number of cells
+            panel_edge = 10*owned_panel + INT(panel_id_x(pid_idx), i_def)
+            select case (panel_edge)
+            case (14, 41, 25, 52, 23, 32, 16, 61, 46, 64, 35, 53)
+              ! Calculation has crossed a panel rotation boundary, so use the
+              ! opposite fields
+              int_mass = int_mass + field_for_y(col_idx + k) * dry_mass_for_y(col_idx + k)
+            case default
+              int_mass = int_mass + field_for_x(col_idx + k) * dry_mass_for_x(col_idx + k)
+            end select
           end do
 
           ! Fractional part ====================================================
@@ -360,9 +376,16 @@ contains
             pid_idx = stencil_map_px(1,stencil_idx)
 
             ! Populate small local array of field values
-            field_local(j) = field_for_x(col_idx + k)
             ipanel_local(j) = int(panel_id_x(pid_idx), i_def)
-
+            panel_edge = 10*owned_panel + INT(panel_id_x(pid_idx), i_def)
+            select case (panel_edge)
+            case (14, 41, 25, 52, 23, 32, 16, 61, 46, 64, 35, 53)
+              ! Calculation has crossed a panel rotation boundary, so use the
+              ! opposite field
+              field_local(j) = field_for_y(col_idx + k)
+            case default
+              field_local(j) = field_for_x(col_idx + k)
+            end select
           end do
 
           select case ( order_case )
@@ -538,9 +561,18 @@ contains
             stencil_idx = 1 + ABS(rel_idx) + (stencil_half - 1)*(1 - SIGN(1, -rel_idx))/2
 
             col_idx = stencil_map_y(1,stencil_idx)
+            pid_idx = stencil_map_py(1,stencil_idx)
 
-            int_mass = int_mass + field_for_y(col_idx + k) * dry_mass_for_y(col_idx + k)
-
+            ! Compute mass over integer number of cells
+            panel_edge = 10*owned_panel + INT(panel_id_y(pid_idx), i_def)
+            select case (panel_edge)
+            case (14, 41, 25, 52, 23, 32, 16, 61, 46, 64, 35, 53)
+              ! Calculation has crossed a panel rotation boundary, so use the
+              ! opposite fields
+              int_mass = int_mass + field_for_x(col_idx + k) * dry_mass_for_x(col_idx + k)
+            case default
+              int_mass = int_mass + field_for_y(col_idx + k) * dry_mass_for_y(col_idx + k)
+            end select
           end do
 
           ! Fractional part ====================================================
@@ -560,9 +592,16 @@ contains
             pid_idx = stencil_map_py(1,stencil_idx)
 
             ! Populate small local array of field values
-            field_local(j) = field_for_y(col_idx + k)
             ipanel_local(j) = int(panel_id_y(pid_idx), i_def)
-
+            panel_edge = 10*owned_panel + INT(panel_id_y(pid_idx), i_def)
+            select case (panel_edge)
+            case (14, 41, 25, 52, 23, 32, 16, 61, 46, 64, 35, 53)
+              ! Calculation has crossed a panel rotation boundary, so use the
+              ! opposite field
+              field_local(j) = field_for_x(col_idx + k)
+            case default
+              field_local(j) = field_for_y(col_idx + k)
+            end select
           end do
 
           select case ( order_case )
@@ -683,6 +722,6 @@ contains
     deallocate(field_local)
     deallocate(ipanel_local)
 
-  end subroutine ffsl_flux_xy_spt_code
+  end subroutine ffsl_flux_xy_1rank_code
 
-end module ffsl_flux_xy_spt_kernel_mod
+end module ffsl_flux_xy_1rank_kernel_mod

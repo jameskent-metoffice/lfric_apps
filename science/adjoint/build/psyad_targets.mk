@@ -17,7 +17,7 @@ BASE_DIRS := $(shell python $(ADJOINT_BUILD)/print_paths.py -f $(PSYAD_FILES) -o
 
 # List of all kernel related subdirectories in the base directories where PSyAD files are located.
 KERNEL_PATHS := $(shell python $(ADJOINT_BUILD)/print_paths.py -f $(PSYAD_FILES) -opt "kernel")
-ALG_PATHS   := $(subst kernel,algorithm,$(KERNEL_PATHS))
+ALG_PATHS    := $(subst kernel,algorithm,$(KERNEL_PATHS))
 
 ##############################################################################
 # PRE-PATCH TARGETS
@@ -68,14 +68,22 @@ ADJT_TARGETS := $(subst $(PSYAD_WDIR)/kernel,$(PSYAD_WDIR)/algorithm,$(ADJT_TARG
 # Total targets for PSyAD stage.
 PSYADJ_TARGETS  := $(ATL_TARGETS) $(ADJ_TARGETS)
 PSYADJT_TARGETS := $(ATLT_TARGETS) $(ADJT_TARGETS)
-PSYAD_TARGETS := $(PSYADJ_TARGETS) $(PSYADJT_TARGETS)
+ifeq "$(BUILD_ADJ_TESTS)" "TRUE"
+	PSYAD_TARGETS := $(PSYADJ_TARGETS) $(PSYADJT_TARGETS)
+else
+	PSYAD_TARGETS := $(PSYADJ_TARGETS)
+endif
 
 ##############################################################################
 # POST-PATCH TARGETS
 ##############################################################################
 POST_ADJ_TARGETS := $(subst $(PSYAD_WDIR)/kernel,$(WORKING_DIR)/kernel,$(PSYADJ_TARGETS))
 POST_ADJT_TARGETS := $(subst $(PSYAD_WDIR)/algorithm,$(WORKING_DIR)/algorithm,$(PSYADJT_TARGETS))
-POST_PATCH_TARGETS := $(POST_ADJ_TARGETS) $(POST_ADJT_TARGETS)
+ifeq "$(BUILD_ADJ_TESTS)" "TRUE"
+	POST_PATCH_TARGETS := $(POST_ADJ_TARGETS) $(POST_ADJT_TARGETS)
+else
+	POST_PATCH_TARGETS := $(POST_ADJ_TARGETS)
+endif
 
 # Necessary directories that need to be created.
 # Pre-patch.

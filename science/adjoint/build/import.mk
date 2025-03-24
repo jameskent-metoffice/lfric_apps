@@ -4,6 +4,8 @@
 # under which the code may be used.
 ##############################################################################
 export PROJECT_SOURCE = $(APPS_ROOT_DIR)/science/adjoint/source
+PSYAD_CONFIG_FILE    ?= $(CORE_ROOT_DIR)/etc/psyclone.cfg
+BUILD_ADJ_TESTS      ?= FALSE
 
 .PHONY: import-adjoint
 import-adjoint: export ADJOINT_BUILD   := $(APPS_ROOT_DIR)/science/adjoint/build
@@ -12,10 +14,14 @@ import-adjoint: export PATCH_DIR       := $(APPS_ROOT_DIR)/science/adjoint/patch
 import-adjoint:
 ##############################################################################
 # Building PSyAD kernels
-	$Q$(MAKE) $(QUIET_ARG) -f $(ADJOINT_BUILD)/build_psyad.mk
+	$Q$(MAKE) $(QUIET_ARG) -f $(ADJOINT_BUILD)/build_psyad.mk \
+	          PSYAD_CONFIG_FILE=$(PSYAD_CONFIG_FILE) \
+	          BUILD_ADJ_TESTS=$(BUILD_ADJ_TESTS)
 ##############################################################################
 # Generating PSyADJT driver module file
+ifeq "$(BUILD_ADJ_TESTS)" "TRUE"
 	$Q$(MAKE) $(QUIET_ARG) -f $(ADJOINT_BUILD)/psyad_driver.mk
+endif
 ##############################################################################
 # Standard import commands
 	$Q$(MAKE) $(QUIET_ARG) -f $(LFRIC_BUILD)/extract.mk \
@@ -25,7 +31,10 @@ import-adjoint:
 	          OPTIMISATION_PATH=$(OPTIMISATION_PATH)
 ##############################################################################
 # Need this step to PSyclone the generated adjoint tests from PSyAD
+ifeq "$(BUILD_ADJ_TESTS)" "TRUE"
 	$Q$(MAKE) $(QUIET_ARG) -f $(LFRIC_BUILD)/psyclone/psyclone.mk \
 	          SOURCE_DIR=$(WORKING_DIR) \
-	          OPTIMISATION_PATH=$(OPTIMISATION_PATH)
+	          OPTIMISATION_PATH=$(OPTIMISATION_PATH) \
+	          PSYCLONE_CONFIG_FILE=$(PSYAD_CONFIG_FILE)
+endif
 

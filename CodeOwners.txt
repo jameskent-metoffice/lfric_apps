@@ -30,7 +30,7 @@ gungho_model                thomasmelvin            benshipway              dyna
 jedi_lfric_tests            stevensandbach          davidsimonin            data_assimilation
 lfric_atm                   ianboutle               benshipway              dynamics_research
 lfric_coupled               richardhill             benshipway              global_coupled_model_development
-lfricinputs                 ivakavcic               lottieturner            tools_and_collaborative_development
+lfricinputs                 charlotteturner         mikehobson              core_capability_development
 linear_model                christinejohnson        thomasbendall           dynamics_research
 ngarch                      christophermaynard      jamescunningham-smith   ng-arch
 shallow_water               jameskent               alexbrown               dynamics_research

@@ -23,13 +23,13 @@
 
 export lfric_core_rev=52772
 export lfric_core_sources=
-export casim_rev=11905
+export casim_rev=11934
 export casim_sources=
-export jules_rev=30271
+export jules_rev=30298
 export jules_sources=
 export shumlib_rev=apps2.1
 export shumlib_sources=
-export socrates_rev=1769
+export socrates_rev=1831
 export socrates_sources=
 export ukca_rev=6284
 export ukca_sources=

@@ -19,7 +19,7 @@ subroutine set_constants_from_um( n_conv_levels, ntra_fld, i_tr_vars )
 
 ! UM settings and constants used from the various UM modules
 use timestep_mod, only: um_timestep => timestep
-use nlsizes_namelist_mod, only: row_length, rows, bl_levels, tr_vars
+use nlsizes_namelist_mod, only: row_length, rows, bl_levels
 use cloud_inputs_mod, only: i_cld_vn
 use pc2_constants_mod, only: i_cld_pc2
 use ukca_option_mod, only: l_ukca, l_ukca_plume_scav
@@ -210,15 +210,6 @@ allocate( tracer_positive(n_tracers) )
 do i_field = 1, n_tracers
   tracer_positive(i_field) = .true.
 end do
-! The one exception is possibly the user-defined free tracers; setting
-! these to negative values might be a legitimate thing to do, so
-! set positive-only flag to false for these
-if ( tr_vars > 0 ) then
-  ! i_tr_vars stores the index of the first free tracer field
-  do i_field = i_tr_vars, i_tr_vars + tr_vars - 1
-    tracer_positive(i_field) = .false.
-  end do
-end if
 
 ! Number of downdraughts types
 n_dndraft_types = n_dndraft_types_um

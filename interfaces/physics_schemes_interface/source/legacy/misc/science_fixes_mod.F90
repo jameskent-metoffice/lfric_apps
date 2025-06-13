@@ -34,7 +34,6 @@ use parkind1, only: jprb, jpim
 use yomhook, only: lhook, dr_hook
 use errormessagelength_mod, only: errormessagelength
 use umprintmgr, only: newline
-use iau_mod, only: l_iau
 use model_domain_mod, only: model_type, mt_lam
 use missing_data_mod, only: imdi
 
@@ -75,8 +74,6 @@ logical :: l_fix_ccb_cct = .false.        ! Review in July 2017
 logical :: l_fix_zh = .false.             ! Review in Dec 2018
 ! ticket #2405
 logical :: l_fix_nacl_density = .false.   ! Review in Dec 2018
-! ticket #2710
-logical :: l_fix_iau_rim_density = .false. ! Review in Sep 2019
 ! ticket #3011
 logical :: l_fix_rcf_mlsnow_icefreemax = .false. ! Review in Dec 2020
 ! ticket #3681
@@ -147,7 +144,6 @@ namelist/temp_fixes/                                                           &
         l_fix_rp_shock_amp, l_fix_dyndiag,                                     &
         l_fix_riming, l_fix_zh,                                                &
         l_fix_ccb_cct, l_fix_nacl_density,                                     &
-        l_fix_iau_rim_density,                                                 &
         l_fix_rcf_mlsnow_icefreemax, l_fix_conv_diags_var,                     &
         l_fix_lsp_incs_to_spt, l_fix_ec_gen_hgt,                               &
         l_fix_improve_drydep, l_fix_drydep_so2_water,                          &
@@ -394,16 +390,6 @@ if (.not. l_fix_nacl_density ) then
   'the UKCA + GLOMAP aerosol model'
 
   call ereport(RoutineName, ErrorStatus, CMessage)
-end if
-
-if (l_iau .and. model_type == mt_lam .and. .not. l_fix_iau_rim_density) then
-  ErrorStatus = -100
-  cmessage    =                                                       newline//&
-  'Model run excludes ticket #2710 as l_fix_iau_rim_density=.false.'//newline//&
-  'This will cause rim dryrho updates from the LBCs to be ignored'//  newline//&
-  'when using an IAU scheme that inserts increments after the'//      newline//&
-  'model basis time.'
-  call ereport(RoutineName, ErrorStatus, cmessage)
 end if
 
 if (.not. l_fix_rcf_mlsnow_icefreemax ) then
@@ -749,7 +735,6 @@ write(lineBuffer,'(A,L1)') ' l_fix_ccb_cct = ',l_fix_ccb_cct
 call umPrint(lineBuffer,src=ModuleName)
 write(lineBuffer,'(A,L1)') ' l_fix_nacl_density = ',l_fix_nacl_density
 call umPrint(lineBuffer,src=ModuleName)
-write(lineBuffer,'(A,L1)') ' l_fix_iau_rim_density = ',l_fix_iau_rim_density
 call umPrint(lineBuffer,src=ModuleName)
 write(lineBuffer,'(A,L1)') ' l_fix_rcf_mlsnow_icefreemax = ',                  &
                              l_fix_rcf_mlsnow_icefreemax

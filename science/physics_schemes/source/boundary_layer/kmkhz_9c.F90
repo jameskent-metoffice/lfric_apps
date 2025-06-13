@@ -71,7 +71,6 @@ use planet_constants_mod, only: vkman => vkman_bl, r => rd_bl,                 &
      lcrcp => lcrcp_bl, lsrcp => lsrcp_bl
 use s_scmop_mod,  only: default_streams,                                       &
      t_avg, d_bl, d_sl, scmdiag_bl
-use scmoutput_mod,only: scmoutput
 use timestep_mod, only: timestep
 use water_constants_mod, only: tm => tm_bl
 

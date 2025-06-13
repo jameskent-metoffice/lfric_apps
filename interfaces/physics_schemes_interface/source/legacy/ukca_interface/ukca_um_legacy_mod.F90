@@ -49,7 +49,7 @@ use atm_fields_mod, only:                                                      &
   gc_ait_ins_oc
 use c_sulchm_mod, only: chi, rad_acc, rad_ait, sigma
 use calc_surf_area_mod, only: calc_surf_area
-use cderived_mod, only: delta_lambda, delta_phi, base_phi
+use cderived_mod, only: delta_lambda, delta_phi
 use copydiag_3d_mod, only: copydiag_3d
 use copydiag_mod, only: copydiag
 use cstash_mod, only: idom_b, iopl_d, isec_b, item_b, modl_b, ndiag

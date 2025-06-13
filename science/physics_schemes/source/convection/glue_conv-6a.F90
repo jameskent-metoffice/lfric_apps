@@ -126,7 +126,6 @@ use rad_input_mod,       only: l_cca_dp_prog, l_cca_md_prog,                   &
                                l_cca_sh_prog
 
 use model_domain_mod,      only: model_type, mt_single_column, mt_lfric
-use dgnstcs_glue_conv_mod, only: dgnstcs_glue_conv_6a
 
 use wtrac_conv_mod,         only: l_wtrac_conv, conv_e_wtrac_type,             &
                                    wtrac_alloc_conv_e, wtrac_dealloc_conv_e
@@ -2888,24 +2887,6 @@ if (n_sh  >   0 .and. iconv_shallow >  0) then
   call wtrac_dealloc_conv_e(n_wtrac, wtrac_e)
 
 end if ! n_sh > 0
-
-
-! SCM dummy diagnostics if no shallow
-
-! NOTE: these diagnostics will break the SCM diag system if running with
-! more than one column.  This dummy call method will only work if
-! either all points are in the shallow conv compression list, or none are.
-
-if (((model_type == mt_single_column) .or. (model_type == mt_lfric)) .and.     &
-     (n_sh == 0) ) then
-
-  if (iconv_shallow >= 2) then
-
-    call dgnstcs_glue_conv_6a( nlev )
-
-
-  end if ! type of shallow convection
-end if ! model_type
 
 
 !-----------------------------------------------------------------------

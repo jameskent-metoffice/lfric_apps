@@ -65,7 +65,6 @@ use turb_diff_mod, only: l_subfilter_vert, l_subfilter_horiz
 use model_domain_mod, only: model_type, mt_single_column
 use s_scmop_mod,      only: default_streams,                                   &
                             t_avg, d_sl, scmdiag_bl
-use scmoutput_mod,    only: scmoutput
 
 use yomhook, only: lhook, dr_hook
 use parkind1, only: jprb, jpim

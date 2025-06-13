@@ -32,8 +32,7 @@ contains
     ! UM modules containing things that need setting
     use gen_phys_inputs_mod, only: l_mr_physics, l_vol_interp_rho
     use model_domain_mod, only: model_type, mt_lfric
-    use nlsizes_namelist_mod, only: model_levels, cloud_levels, n_cca_lev, &
-                                    tr_vars
+    use nlsizes_namelist_mod, only: model_levels, n_cca_lev
 
     implicit none
 
@@ -42,11 +41,7 @@ contains
     ! ----------------------------------------------------------------
     ! Vertical dimensions set from LFRic number of layers.
     model_levels = number_of_layers
-    cloud_levels = number_of_layers
     n_cca_lev    = number_of_layers
-    ! Number of tracer variables - not implemented in LFRic so fixed at 0.
-    ! This may change if we implement tracers ever.
-    tr_vars = 0
 
     ! ----------------------------------------------------------------
     ! Model type - contained in UM module model_domain_mod

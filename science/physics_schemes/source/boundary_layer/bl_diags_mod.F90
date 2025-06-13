@@ -1194,7 +1194,6 @@ subroutine alloc_bl_imp(bl_diag, l_apply_diag, nscmdpkgs, l_scmdiags)
 
 use atm_fields_bounds_mod, only: pdims
 use bl_option_mod, only: fric_heating, off, zero
-use gen_phys_inputs_mod, only: l_check_moist_inc
 use model_domain_mod, only: model_type, mt_single_column
 use nlsizes_namelist_mod, only: bl_levels
 use s_scmop_mod, only: scmdiag_bl, scmdiag_incs

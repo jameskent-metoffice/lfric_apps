@@ -39,7 +39,6 @@ use planet_constants_mod, only: cp => cp_bl, grcp => grcp_bl
 use bl_diags_mod, only: strnewbldiag
 use s_scmop_mod,   only: default_streams,                                      &
     t_avg, d_bl, scmdiag_bl
-use scmoutput_mod, only: scmoutput
 use model_domain_mod, only: model_type, mt_single_column
 
 use free_tracers_inputs_mod, only: l_wtrac, n_wtrac

@@ -125,7 +125,6 @@ use cv_stash_flg_mod, only:                                                    &
 use model_domain_mod,       only: model_type, mt_single_column
 use s_scmop_mod,            only: default_streams,                             &
                                  t_inst,d_wet,d_point
-use scmoutput_mod,          only: scmoutput
 
 implicit none
 
@@ -1518,17 +1517,6 @@ do i = 1,n_xx
 
   end if
 end do ! n_xx loop
-
-
-!-----------------------------------------------------------------------
-! SCM diagnostics
-!-----------------------------------------------------------------------
-
-! NOTE: these diagnostics will break the SCM diag system if running with
-! more than one column.  Calling scmoutput from inside a routine that
-! works on compressed arrays, not at all points, will only work if
-! either all points are in the compression list, or none are.
-
 
 
 !-----------------------------------------------------------------------

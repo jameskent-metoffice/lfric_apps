@@ -41,7 +41,6 @@ use cv_run_mod, only: l_param_conv
 use model_domain_mod, only: model_type, mt_single_column
 use s_scmop_mod,      only: default_streams,                                   &
                             t_avg, d_bl, scmdiag_bl
-use scmoutput_mod,    only: scmoutput
 
 use yomhook, only: lhook, dr_hook
 use parkind1, only: jprb, jpim

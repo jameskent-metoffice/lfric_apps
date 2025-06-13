@@ -67,7 +67,6 @@ use level_heights_mod, only:                                                   &
 
 use yomhook, only: lhook, dr_hook
 use parkind1, only: jprb, jpim
-use Field_Types, only: fld_type_p
 !$    use omp_lib, only: omp_get_num_threads
 use model_domain_mod, only: model_type, mt_global
 

@@ -56,7 +56,6 @@ use pc2_constants_mod,     only: acf_cusack, pc2init_bimodal,                  &
 
 use s_scmop_mod,           only: default_streams,                              &
                                  t_inst, d_wet, d_all, scmdiag_pc2
-use scmoutput_mod,         only: scmoutput
 
 use model_domain_mod, only: model_type, mt_single_column
 

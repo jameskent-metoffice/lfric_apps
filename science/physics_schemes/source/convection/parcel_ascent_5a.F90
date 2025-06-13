@@ -45,7 +45,6 @@ use model_domain_mod,      only: model_type, mt_single_column
 
 use s_scmop_mod,           only: default_streams,                              &
                                  t_inst,d_wet,scmdiag_conv
-use scmoutput_mod,         only: scmoutput
 use nlsizes_namelist_mod,  only: model_levels
 
 use qsat_mod, only: qsat, qsat_mix

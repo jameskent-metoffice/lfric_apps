@@ -99,7 +99,6 @@ use planet_constants_mod, only: vkman => vkman_bl, grcp => grcp_bl,            &
      pref => pref_bl, kappa => kappa_bl, g => g_bl
 use s_scmop_mod,   only: default_streams,                                      &
                          t_inst, t_avg, d_bl, d_sl, d_point, scmdiag_bl
-use scmoutput_mod, only: scmoutput
 use science_fixes_mod, only: l_fix_dyndiag, l_fix_zh
 use stochastic_physics_run_mod, only: l_rp2, par_mezcla_rp, rp_idx,            &
     i_rp_scheme, i_rp2b, cs_rp, zhloc_depth_fac_rp

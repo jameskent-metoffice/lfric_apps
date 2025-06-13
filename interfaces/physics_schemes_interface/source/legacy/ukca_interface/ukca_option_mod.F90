@@ -38,7 +38,6 @@ use ukca_config_specification_mod, only:                                       &
 
 use missing_data_mod,      only: rmdi, imdi
 use ukca_tracer_stash,     only: a_max_ukcavars
-use hybrid_control_mod,    only: l_strip_ukca
 
 use yomhook,  only: lhook, dr_hook
 use parkind1, only: jprb, jpim

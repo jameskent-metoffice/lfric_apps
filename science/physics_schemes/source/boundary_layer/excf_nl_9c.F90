@@ -63,7 +63,6 @@ use model_domain_mod, only: model_type, mt_single_column
 use missing_data_mod, only: rmdi
 use planet_constants_mod, only: vkman => vkman_bl, g => g_bl
 use s_scmop_mod,   only: default_streams, t_avg, d_bl, scmdiag_bl
-use scmoutput_mod, only: scmoutput
 use stochastic_physics_run_mod, only: l_rp2 ,  i_rp_scheme, i_rp2b,            &
                                       a_ent_1_rp, g1_rp,                       &
                                       a_ent_shr_rp, a_ent_shr_rp_max,          &

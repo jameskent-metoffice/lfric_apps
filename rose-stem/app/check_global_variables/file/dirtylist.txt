@@ -31,10 +31,8 @@ interfaces/physics_schemes_interface/source/legacy/top_level/wtrac_atm_step.F90
 interfaces/physics_schemes_interface/source/legacy/top_level/submodel_mod.F90
 interfaces/physics_schemes_interface/source/legacy/top_level/atm_fields_mod.F90
 interfaces/physics_schemes_interface/source/legacy/top_level/gen_phys_inputs_mod.F90
-interfaces/physics_schemes_interface/source/legacy/top_level/atmos_physics2_alloc.F90
 interfaces/physics_schemes_interface/source/legacy/top_level/timestep_mod.F90
 interfaces/physics_schemes_interface/source/legacy/top_level/tuning_segments_mod.F90
-interfaces/physics_schemes_interface/source/legacy/top_level/nlstcall_nrun_as_crun_mod.F90
 interfaces/physics_schemes_interface/source/legacy/top_level/atm_fields_bounds_mod.F90
 interfaces/physics_schemes_interface/source/legacy/top_level/atm_step_local_mod.F90
 interfaces/physics_schemes_interface/source/legacy/stash/stash_array_mod.F90
@@ -51,7 +49,6 @@ interfaces/physics_schemes_interface/source/legacy/mpp/um_parcore.F90
 interfaces/physics_schemes_interface/source/legacy/mpp/um_parvars.F90
 interfaces/physics_schemes_interface/source/legacy/misc/science_fixes_mod.F90
 interfaces/physics_schemes_interface/source/legacy/misc/chk_opts_mod.F90
-interfaces/physics_schemes_interface/source/legacy/coupling/hybrid_control_mod.F90
 interfaces/physics_schemes_interface/source/legacy/modules/s_scmop_mod.F90
 interfaces/physics_schemes_interface/source/legacy/glomap_clim_interface/glomap_clim_option_mod.F90
 interfaces/physics_schemes_interface/source/legacy/qxreconf/calc_fit_fsat.F90
@@ -113,7 +110,6 @@ science/physics_schemes/source/free_tracers/water_tracers_mod.F90
 science/physics_schemes/source/free_tracers/wtrac_calc_ratio.F90
 science/physics_schemes/source/dynamics_advection/trignometric_mod.F90
 science/physics_schemes/source/dynamics_advection/level_heights_mod.F90
-science/physics_schemes/source/carbon/carbon_options_mod.F90
 science/physics_schemes/source/large_scale_precipitation/lsprec_mod.F90
 science/physics_schemes/source/large_scale_precipitation/CASIM/casim_switches.F90
 science/physics_schemes/source/large_scale_precipitation/CASIM/casim_set_dependent_switches_mod.F90
@@ -140,6 +136,7 @@ science/physics_schemes/source/idealised/profiles_mod.F90
 science/physics_schemes/source/idealised/planet_suite_mod.F90
 science/physics_schemes/source/idealised/idealise_run_mod.F90
 science/physics_schemes/source/idealised/surface_flux_mod.F90
+science/physics_schemes/source/carbon/carbon_options_mod.F90
 science/physics_schemes/source/convection/cv_stash_flg_mod.F90
 science/physics_schemes/source/convection/tcs_parameters_warm.F90
 science/physics_schemes/source/convection/cv_param_mod.F90
@@ -161,8 +158,6 @@ science/physics_schemes/source/large_scale_cloud/cloud_inputs_mod.F90
 science/physics_schemes/source/large_scale_cloud/wtrac_pc2.F90
 science/physics_schemes/source/diffusion_and_filtering/leonard_incs_mod.F90
 science/physics_schemes/source/diffusion_and_filtering/turb_diff_mod.F90
-science/physics_schemes/source/AC_assimilation/iau_mod.F90
-science/physics_schemes/source/PWS_diagnostics/pws_diags_mod.F90
 science/physics_schemes/source/gravity_wave_drag/gw_ussp_prec_mod.F90
 science/physics_schemes/source/gravity_wave_drag/g_wave_input_mod.F90
 

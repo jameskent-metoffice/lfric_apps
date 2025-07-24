@@ -41,7 +41,7 @@ contains
                                  v_i_length, v_j_length
     use tuning_segments_mod, only: bl_segment_size, precip_segment_size, &
                                    ussp_seg_size, gw_seg_size
-    use physics_config_mod,  only : ls_ppn_segment, configure_segments
+    use physics_config_mod,  only : ls_ppn_segment, gw_segment, bl_segment, ussp_segment, configure_segments
     use log_mod, only : log_event, log_scratch_space, LOG_LEVEL_ERROR
 
     implicit none
@@ -71,11 +71,9 @@ contains
     ! a kernel. However, multiple columns are passed to a kernel,
     ! these values will need to be set depending on how many columns
     ! a kernel is passed.
-    bl_segment_size     = row_length
-    gw_seg_size         = row_length
-    ussp_seg_size       = row_length
 
-    if (configure_segments) then
+    !keep the first
+    if (configure_segments .and. row_length .gt. 1) then
       select case (ls_ppn_segment)
         case (:-1)
           write(log_scratch_space,'(A)') &
@@ -91,9 +89,57 @@ contains
           precip_segment_size = row_length
 
       end select
+      select case (bl_segment)
+        case (:-1)
+          write(log_scratch_space,'(A)') &
+                'Invalid value: specified boundary layer segment size is -ve.'
+          call log_event(log_scratch_space, LOG_LEVEL_ERROR)
+
+        case (1:)
+          ! Set the value from the namelist
+          bl_segment_size = bl_segment
+
+        case default
+          ! Default behaviour is to set to row_length
+          bl_segment_size = row_length
+
+      end select
+      select case (gw_segment)
+        case (:-1)
+          write(log_scratch_space,'(A)') &
+                'Invalid value: specified gravity wave segment is -ve.'
+          call log_event(log_scratch_space, LOG_LEVEL_ERROR)
+
+        case (1:)
+           ! Set the value from the namelist
+           gw_seg_size = gw_segment
+
+        case default
+          ! Default behaviour is to set to row_length
+          gw_seg_size = row_length
+
+      end select
+      select case (ussp_segment)
+        case (:-1)
+        write(log_scratch_space,'(A)') &
+              'Invalid value: specified ussp segment is -ve.'
+        call log_event(log_scratch_space, LOG_LEVEL_ERROR)
+
+        case (1:)
+          ! Set the value from the namelist
+          ussp_seg_size = ussp_segment
+
+        case default
+          ! Default behaviour is to set to row_length
+          ussp_seg_size = row_length
+
+      end select
     else
       ! Default behaviour is to set to row_length
       precip_segment_size = row_length
+      bl_segment_size     = row_length
+      gw_seg_size         = row_length
+      ussp_seg_size       = row_length
     end if
 
     ! Compute lengths in i and j direction. This is the earliest place that they

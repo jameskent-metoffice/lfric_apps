@@ -40,7 +40,7 @@ module bl_exp_kernel_mod
   !>
   type, public, extends(kernel_type) :: bl_exp_kernel_type
     private
-    type(arg_type) :: meta_args(92) = (/                                       &
+    type(arg_type) :: meta_args(94) = (/                                       &
          arg_type(GH_FIELD, GH_REAL,  GH_READ,      WTHETA),                   &! theta_in_wth
          arg_type(GH_FIELD, GH_REAL,  GH_READ,      W3),                       &! rho_in_w3
          arg_type(GH_FIELD, GH_REAL,  GH_READ,      WTHETA),                   &! rho_in_wth
@@ -102,6 +102,8 @@ module bl_exp_kernel_mod
          arg_type(GH_FIELD, GH_REAL,  GH_WRITE,     WTHETA),                   &! dtrdz_tq_bl
          arg_type(GH_FIELD, GH_REAL,  GH_WRITE,     W3),                       &! fd_taux
          arg_type(GH_FIELD, GH_REAL,  GH_WRITE,     W3),                       &! fd_tauy
+         arg_type(GH_FIELD, GH_REAL,  GH_READ,      ANY_DISCONTINUOUS_SPACE_1),&! sea_u_current
+         arg_type(GH_FIELD, GH_REAL,  GH_READ,      ANY_DISCONTINUOUS_SPACE_1),&! sea_v_current
          arg_type(GH_FIELD, GH_REAL,  GH_WRITE,     WTHETA),                   &! lmix_bl
          arg_type(GH_FIELD, GH_REAL,  GH_READWRITE, WTHETA),                   &! gradrinr
          arg_type(GH_FIELD, GH_REAL,  GH_READ,      ANY_DISCONTINUOUS_SPACE_1),&! z0m_eff
@@ -209,6 +211,8 @@ contains
   !> @param[in,out] dtrdz_tq_bl            dt/(rho*r*r*dz) in wth
   !> @param[in,out] fd_taux                'Zonal' momentum stress from form drag
   !> @param[in,out] fd_tauy                'Meridional' momentum stress from form drag
+  !> @param[in]     sea_u_current          Ocean surface U current
+  !> @param[in]     sea_v_current          Ocean surface V current
   !> @param[in,out] lmix_bl                Turbulence mixing length in wth
   !> @param[in,out] gradrinr               Gradient Richardson number in wth
   !> @param[in]     z0m_eff                Grid mean effective roughness length
@@ -323,6 +327,8 @@ contains
                          dtrdz_tq_bl,                           &
                          fd_taux,                               &
                          fd_tauy,                               &
+                         sea_u_current,                         &
+                         sea_v_current,                         &
                          lmix_bl,                               &
                          gradrinr,                              &
                          z0m_eff,                               &
@@ -476,7 +482,9 @@ contains
     real(kind=r_def), dimension(undf_2d), intent(in)    :: h_blend_orog_2d,    &
                                                            recip_l_mo_sea_2d,  &
                                                            rhostar_2d,         &
-                                                           t1_sd_2d, q1_sd_2d
+                                                           t1_sd_2d, q1_sd_2d, &
+                                                           sea_u_current,      &
+                                                           sea_v_current
 
     real(kind=r_def), intent(in) :: tile_fraction(undf_tile)
     real(kind=r_def), intent(in) :: tile_temperature(undf_tile)
@@ -737,9 +745,12 @@ contains
         etadot(i,1,k) = velocity_w2v(map_wth(1,i) + k) / z_theta(i,1,nlayers)
       end do
     end do
-    ! surface currents
-    u_0_p = 0.0_r_bl
-    v_0_p = 0.0_r_bl
+
+    do i = 1, seg_len
+      ! surface currents
+      u_0_p(i,1) = sea_u_current(map_2d(1,i))
+      v_0_p(i,1) = sea_v_current(map_2d(1,i))
+    end do
 
     !-----------------------------------------------------------------------
     ! Things saved from one timestep to the next

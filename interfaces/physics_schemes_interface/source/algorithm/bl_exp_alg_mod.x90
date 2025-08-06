@@ -387,7 +387,8 @@ contains
                                     dw_bl, rhokm_bl, surf_interp, rhokh_bl,    &
                                     tke_bl, ngstress_bl, bq_bl, bt_bl,         &
                                     moist_flux_bl, heat_flux_bl, dtrdz_tq_bl,  &
-                                    fd_taux, fd_tauy, lmix_bl, gradrinr,       &
+                                    fd_taux, fd_tauy, sea_u_current_ptr,       &
+                                    sea_v_current_ptr, lmix_bl, gradrinr,      &
                                     z0m_eff, ustar, zh_nonloc, zhsc, z_lcl,    &
                                     inv_depth, qcl_at_inv_top, shallow_flag,   &
                                     uw0_flux, vw0_flux, lcl_height,            &

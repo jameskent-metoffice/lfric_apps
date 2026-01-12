@@ -41,10 +41,14 @@ module transport_control_alg_mod
   type(field_type) :: rho0
   type(field_type) :: theta0
   type(field_type) :: tracer_con0
+  type(field_type) :: tracer_con_lim0
+  type(field_type) :: tracer_con_strict0
   type(field_type) :: tracer_adv0
   type(field_type) :: constant0
   type(field_type) :: w2_vector0
   type(field_type) :: mr0(nummr)
+  type(field_type) :: mr_lim0(nummr)
+  type(field_type) :: mr_strict0(nummr)
   type(field_type) :: w3_aerosol0
   type(field_type) :: wt_aerosol0
 
@@ -196,35 +200,44 @@ contains
   !> @param[in] w2_vector   Vector-valued field replicating wind transport (in W2)
   !> @param[in] w3_aerosol  Tracer in W3 on coarse mesh
   !> @param[in] wt_aerosol  Tracer in Wtheta on coarse mesh
-  subroutine transport_init( rho, theta, tracer_con, tracer_adv, constant, mr, &
-                             w2_vector, w3_aerosol, wt_aerosol )
+  subroutine transport_init( rho, theta, tracer_con, tracer_con_lim,  &
+                             tracer_con_strict, tracer_adv, constant, &
+                             mr, mr_lim, mr_strict, w2_vector, w3_aerosol, wt_aerosol )
 
     implicit none
 
     ! Prognostic fields
-    type(field_type), intent(in) :: rho, theta, tracer_con, tracer_adv
+    type(field_type), intent(in) :: rho, theta, tracer_con, tracer_con_lim, tracer_con_strict, tracer_adv
     type(field_type), intent(in) :: constant, w2_vector, w3_aerosol, wt_aerosol
-    type(field_type), intent(in) :: mr(nummr)
+    type(field_type), intent(in) :: mr(nummr), mr_lim(nummr), mr_strict(nummr)
 
     ! Store initial values for computing errors
     call rho%copy_field_properties(rho0)
     call theta%copy_field_properties(theta0)
     call tracer_con%copy_field_properties(tracer_con0)
+    call tracer_con_lim%copy_field_properties(tracer_con_lim0)
+    call tracer_con_strict%copy_field_properties(tracer_con_strict0)
     call tracer_adv%copy_field_properties(tracer_adv0)
     call constant%copy_field_properties(constant0)
     call mr(1)%copy_field_properties(mr0(1))
+    call mr_lim(1)%copy_field_properties(mr_lim0(1))
+    call mr_strict(1)%copy_field_properties(mr_strict0(1))
     call w2_vector%copy_field_properties(w2_vector0)
     call w3_aerosol%copy_field_properties(w3_aerosol0)
     call wt_aerosol%copy_field_properties(wt_aerosol0)
 
-    call invoke( setval_X(rho0, rho),               &
-                 setval_X(theta0, theta),           &
-                 setval_X(tracer_con0, tracer_con), &
-                 setval_X(tracer_adv0, tracer_adv), &
-                 setval_X(constant0, constant),     &
-                 setval_X(mr0(1), mr(1)),           &
-                 setval_X(w2_vector0, w2_vector),   &
-                 setval_X(w3_aerosol0, w3_aerosol), &
+    call invoke( setval_X(rho0, rho),                             &
+                 setval_X(theta0, theta),                         &
+                 setval_X(tracer_con0, tracer_con),               &
+                 setval_X(tracer_con_lim0, tracer_con_lim),       &
+                 setval_X(tracer_con_strict0, tracer_con_strict), &
+                 setval_X(tracer_adv0, tracer_adv),               &
+                 setval_X(constant0, constant),                   &
+                 setval_X(mr0(1), mr(1)),                         &
+                 setval_X(mr_lim0(1), mr_lim(1)),                 &
+                 setval_X(mr_strict0(1), mr_strict(1)),           &
+                 setval_X(w2_vector0, w2_vector),                 &
+                 setval_X(w3_aerosol0, w3_aerosol),               &
                  setval_X(wt_aerosol0, wt_aerosol) )
 
   end subroutine transport_init
@@ -249,11 +262,13 @@ contains
   !> @param[in,out] wt_aerosol         Tracer in Wtheta on coarse mesh to transport advectively
   !> @param[in,out] aerosol_wind       Transporting wind field on the coarse mesh
   !> @param[in]     nummr_to_transport Number of moisture species to transport
-  subroutine transport_step( model_clock, wind,        &
-                             rho, theta, tracer_con,   &
-                             tracer_adv, constant, mr, &
-                             w2_vector, w3_aerosol,    &
-                             wt_aerosol, aerosol_wind, &
+  subroutine transport_step( model_clock, wind,                 &
+                             rho, theta, tracer_con,            &
+                             tracer_con_lim, tracer_con_strict, &
+                             tracer_adv, constant, mr,          &
+                             mr_lim, mr_strict,                 &
+                             w2_vector, w3_aerosol,             &
+                             wt_aerosol, aerosol_wind,          &
                              nummr_to_transport )
 
     use sci_field_bundle_builtins_mod,    only: clone_bundle, copy_bundle
@@ -277,14 +292,16 @@ contains
     class(model_clock_type), intent(in)    :: model_clock
     type(field_type),        intent(inout) :: wind, rho, theta, w2_vector
     type(field_type),        intent(inout) :: tracer_con, tracer_adv, constant
+    type(field_type),        intent(inout) :: tracer_con_lim, tracer_con_strict
     type(field_type),        intent(inout) :: w3_aerosol, wt_aerosol, aerosol_wind
-    type(field_type),        intent(inout) :: mr(nummr)
+    type(field_type),        intent(inout) :: mr(nummr), mr_lim(nummr), mr_strict(nummr)
     integer(kind=i_def),     intent(in)    :: nummr_to_transport
 
     real(kind=r_def) :: current_time
     real(kind=r_def) :: cast_dt
     type(field_type) :: rho_n, theta_n, constant_n, w2_vector_n
     type(field_type) :: tracer_con_n, tracer_adv_n, mr_n(nummr)
+    type(field_type) :: tracer_con_lim_n, tracer_con_strict_n, mr_lim_n(nummr), mr_strict_n(nummr)
     type(field_type) :: w3_aerosol_n, wt_aerosol_n
     type(field_type) :: w2_vector_inc, rhs_w2, theta_inc
     type(field_type) :: aerosol_reference_rho
@@ -343,6 +360,24 @@ contains
             tracer_con, tracer_con_n, transport_controller, transport_metadata &
     )
 
+    ! Transport conservative W3 tracer
+    call log_event( "Transporting conservative limiter tracer...", LOG_LEVEL_INFO)
+    transport_metadata => transport_metadata_collection%get_transport_metadata('tracer_con_lim')
+    call tracer_con_lim%copy_field_properties(tracer_con_lim_n)
+    call invoke( setval_X(tracer_con_lim_n, tracer_con_lim) )
+    call transport_field(                                                              &
+            tracer_con_lim, tracer_con_lim_n, transport_controller, transport_metadata &
+    )
+
+    ! Transport conservative W3 tracer
+    call log_event( "Transporting conservative strict tracer...", LOG_LEVEL_INFO)
+    transport_metadata => transport_metadata_collection%get_transport_metadata('tracer_con_strict')
+    call tracer_con_strict%copy_field_properties(tracer_con_strict_n)
+    call invoke( setval_X(tracer_con_strict_n, tracer_con_strict) )
+    call transport_field(                                                                    &
+            tracer_con_strict, tracer_con_strict_n, transport_controller, transport_metadata &
+    )
+
     ! Transport advective W3 tracer
     call log_event( "Transporting advective tracer...", LOG_LEVEL_INFO)
     transport_metadata => transport_metadata_collection%get_transport_metadata('tracer_adv')
@@ -373,6 +408,26 @@ contains
     call copy_bundle(mr, mr_n, nummr)
     call moist_mr_transport_alg(                                               &
             mr, mr_n, nummr_to_transport,                                      &
+            transport_controller, transport_metadata                           &
+    )
+
+    ! Transport moisture mixing ratio fields
+    call log_event("Transporting moisture mixing ratio limiter fields...", LOG_LEVEL_INFO)
+    transport_metadata => transport_metadata_collection%get_transport_metadata('mr_lim')
+    call clone_bundle(mr_lim, mr_lim_n, nummr)
+    call copy_bundle(mr_lim, mr_lim_n, nummr)
+    call moist_mr_transport_alg(                                               &
+            mr_lim, mr_lim_n, nummr_to_transport,                              &
+            transport_controller, transport_metadata                           &
+    )
+
+    ! Transport moisture mixing ratio fields
+    call log_event("Transporting moisture mixing ratio strict fields...", LOG_LEVEL_INFO)
+    transport_metadata => transport_metadata_collection%get_transport_metadata('mr_strict')
+    call clone_bundle(mr_strict, mr_strict_n, nummr)
+    call copy_bundle(mr_strict, mr_strict_n, nummr)
+    call moist_mr_transport_alg(                                               &
+            mr_strict, mr_strict_n, nummr_to_transport,                        &
             transport_controller, transport_metadata                           &
     )
 
@@ -455,8 +510,9 @@ contains
   !> @param[in] w2_vector   Transported vector-valued field in W2
   !> @param[in] w3_aerosol  Transported tracer in W3 on coarse mesh
   !> @param[in] wt_aerosol  Transported tracer in Wtheta on coarse mesh
-  subroutine transport_final( rho, theta, tracer_con, tracer_adv, &
-                              constant, mr, w2_vector, w3_aerosol, wt_aerosol )
+  subroutine transport_final( rho, theta, tracer_con, tracer_con_lim, tracer_con_strict, &
+                              tracer_adv, constant, mr, mr_lim, mr_strict, w2_vector,    &
+                              w3_aerosol, wt_aerosol )
 
     use transport_stats_mod,          only: write_transport_stats
     use split_transport_utils_mod,    only: finalise_split_transport_utils
@@ -465,8 +521,9 @@ contains
 
     ! Prognostic fields
     type(field_type), intent(in) :: rho, theta, tracer_con, tracer_adv
+    type(field_type), intent(in) :: tracer_con_lim, tracer_con_strict
     type(field_type), intent(in) :: w2_vector, constant, w3_aerosol, wt_aerosol
-    type(field_type), intent(in) :: mr(nummr)
+    type(field_type), intent(in) :: mr(nummr), mr_lim(nummr), mr_strict(nummr)
 
     ! Internal variables
     character(str_def)  :: field_name
@@ -478,12 +535,20 @@ contains
     call write_transport_stats(theta, theta0, field_name)
     field_name = 'tracer_con'
     call write_transport_stats(tracer_con, tracer_con0, field_name)
+    field_name = 'tracer_con_lim'
+    call write_transport_stats(tracer_con_lim, tracer_con_lim0, field_name)
+    field_name = 'tracer_con_strict'
+    call write_transport_stats(tracer_con_strict, tracer_con_strict0, field_name)
     field_name = 'tracer_adv'
     call write_transport_stats(tracer_adv, tracer_adv0, field_name)
     field_name = 'constant'
     call write_transport_stats(constant, constant0, field_name)
     field_name = 'mr'
     call write_transport_stats(mr(1), mr0(1), field_name)
+    field_name = 'mr_lim'
+    call write_transport_stats(mr_lim(1), mr_lim0(1), field_name)
+    field_name = 'mr_strict'
+    call write_transport_stats(mr_strict(1), mr_strict0(1), field_name)
     ! NB: transport tests aren't designed to give meaningful answers for vector
     if (use_w2_vector) then
       field_name = 'w2_vector'

@@ -68,19 +68,23 @@ contains
 !> @param[in,out] wt_aerosol        Tracer in Wtheta on coarse mesh to transport advectively
 !> @param[in,out] divergence        Divergence field
 !-----------------------------------------------------------------------------
-subroutine transport_init_fields_alg( mesh,         &
-                                      wind,         &
-                                      density,      &
-                                      theta,        &
-                                      tracer_con,   &
-                                      tracer_adv,   &
-                                      constant,     &
-                                      mr,           &
-                                      w2_vector,    &
-                                      aerosol_mesh, &
-                                      aerosol_wind, &
-                                      w3_aerosol,   &
-                                      wt_aerosol,   &
+subroutine transport_init_fields_alg( mesh,              &
+                                      wind,              &
+                                      density,           &
+                                      theta,             &
+                                      tracer_con,        &
+                                      tracer_con_lim,    &
+                                      tracer_con_strict, &
+                                      tracer_adv,        &
+                                      constant,          &
+                                      mr,                &
+                                      mr_lim,            &
+                                      mr_strict,         &
+                                      w2_vector,         &
+                                      aerosol_mesh,      &
+                                      aerosol_wind,      &
+                                      w3_aerosol,        &
+                                      wt_aerosol,        &
                                       divergence )
 
     implicit none
@@ -93,9 +97,13 @@ subroutine transport_init_fields_alg( mesh,         &
     type(field_type),     intent(inout) :: density
     type(field_type),     intent(inout) :: theta
     type(field_type),     intent(inout) :: tracer_con
+    type(field_type),     intent(inout) :: tracer_con_lim
+    type(field_type),     intent(inout) :: tracer_con_strict
     type(field_type),     intent(inout) :: tracer_adv
     type(field_type),     intent(inout) :: constant
     type(field_type),     intent(inout) :: mr(nummr)
+    type(field_type),     intent(inout) :: mr_lim(nummr)
+    type(field_type),     intent(inout) :: mr_strict(nummr)
     type(field_type),     intent(inout) :: w2_vector
     type(field_type),     intent(inout) :: divergence
     type(field_type),     intent(inout) :: w3_aerosol
@@ -158,12 +166,16 @@ subroutine transport_init_fields_alg( mesh,         &
     call density%initialise( name='rho', vector_space=w3_fs )
     call theta%initialise( name='theta', vector_space=wt_fs )
     call tracer_con%initialise( name='tracer_con', vector_space=w3_fs )
+    call tracer_con_lim%initialise( name='tracer_con_lim', vector_space=w3_fs )
+    call tracer_con_strict%initialise( name='tracer_con_strict', vector_space=w3_fs )
     call tracer_adv%initialise( name='tracer_adv', vector_space=w3_fs )
     call constant%initialise( name='constant', vector_space=wt_fs )
     call w2_vector%initialise( name='w2_vector', vector_space=w2_fs )
     call divergence%initialise( name='divergence', vector_space=w3_fs )
     do imr = 1, nummr
-      call mr(imr)%initialise( name=trim(mr_names(imr)), vector_space=wt_fs )
+      call mr(imr)%initialise( name=trim(m_v), vector_space=wt_fs )
+      call mr_lim(imr)%initialise( name=trim(m_v_lim), vector_space=wt_fs )
+      call mr_strict(imr)%initialise( name=trim(m_v_strict), vector_space=wt_fs )
     end do
     call aerosol_wind%initialise( name='aerosol_wind', vector_space=w2_aerosol_fs )
     call w3_aerosol%initialise( name='w3_aerosol', vector_space=w3_aerosol_fs )
@@ -206,9 +218,17 @@ subroutine transport_init_fields_alg( mesh,         &
     ! Duplicate these values for tracer_adv and mixing ratio
     ! Mixing ratios are set to zero for all but first value
     call set_bundle_scalar( 0.0_r_def, mr, nummr )
-    call invoke( setval_X( tracer_adv, tracer_con ), &
-                 setval_X( mr(1), theta ),           &
-                 enforce_lower_bound_kernel_type(mr(1), 0.0_r_def) )
+    call set_bundle_scalar( 0.0_r_def, mr_lim, nummr )
+    call set_bundle_scalar( 0.0_r_def, mr_strict, nummr )
+    call invoke( setval_X( tracer_adv, tracer_con ),                    &
+                 setval_X( tracer_con_lim, tracer_con ),                &
+                 setval_X( tracer_con_strict, tracer_con ),             &
+                 setval_X( mr(1), theta ),                              &
+                 setval_X( mr_lim(1), theta ),                          &
+                 setval_X( mr_strict(1), theta ),                       &
+                 enforce_lower_bound_kernel_type(mr(1), 0.0_r_def),     &
+                 enforce_lower_bound_kernel_type(mr_lim(1), 0.0_r_def), &
+                 enforce_lower_bound_kernel_type(mr_strict(1), 0.0_r_def) )
 
     ! Set components of w2_vector to be theta/tracer values
     ! In spherical geometries, this will be lon/lat/radial components
@@ -239,10 +259,14 @@ subroutine transport_init_fields_alg( mesh,         &
        call density%set_write_behaviour( tmp_write_ptr )
        call theta%set_write_behaviour( tmp_write_ptr )
        call tracer_con%set_write_behaviour( tmp_write_ptr )
+       call tracer_con_lim%set_write_behaviour( tmp_write_ptr )
+       call tracer_con_strict%set_write_behaviour( tmp_write_ptr )
        call tracer_adv%set_write_behaviour( tmp_write_ptr )
        call constant%set_write_behaviour( tmp_write_ptr )
        call w2_vector%set_write_behaviour( tmp_write_ptr )
        call mr(1)%set_write_behaviour( tmp_write_ptr )
+       call mr_lim(1)%set_write_behaviour( tmp_write_ptr )
+       call mr_strict(1)%set_write_behaviour( tmp_write_ptr )
        call divergence%set_write_behaviour( tmp_write_ptr )
        call aerosol_wind%set_write_behaviour( tmp_write_ptr )
        call w3_aerosol%set_write_behaviour( tmp_write_ptr )

@@ -75,9 +75,13 @@ module transport_driver_mod
   type(field_type) :: density
   type(field_type) :: theta
   type(field_type) :: tracer_con
+  type(field_type) :: tracer_con_lim
+  type(field_type) :: tracer_con_strict
   type(field_type) :: tracer_adv
   type(field_type) :: constant
   type(field_type) :: mr(nummr)
+  type(field_type) :: mr_lim(nummr)
+  type(field_type) :: mr_strict(nummr)
   type(field_type) :: w2_vector
   type(field_type) :: divergence
   type(field_type) :: w3_aerosol
@@ -360,16 +364,19 @@ contains
     call transport_prerun_setup( num_base_meshes )
 
     ! Initialise prognostic variables
-    call transport_init_fields_alg( mesh, wind, density, theta, &
-                                    tracer_con, tracer_adv,     &
-                                    constant, mr, w2_vector,    &
-                                    aerosol_mesh, aerosol_wind, &
-                                    w3_aerosol,  wt_aerosol,    &
+    call transport_init_fields_alg( mesh, wind, density, theta,    &
+                                    tracer_con, tracer_con_lim,    &
+                                    tracer_con_strict, tracer_adv, &
+                                    constant, mr, mr_lim,          &
+                                    mr_strictw2_vector,            &
+                                    aerosol_mesh, aerosol_wind,    &
+                                    w3_aerosol,  wt_aerosol,       &
                                     divergence )
 
     ! Initialise all transport-only control algorithm
-    call transport_init( density, theta, tracer_con, tracer_adv,          &
-                         constant, mr, w2_vector, w3_aerosol, wt_aerosol  )
+    call transport_init( density, theta, tracer_con, tracer_con_lim, &
+                         tracer_con_strict, tracer_adv, constant,    &
+                         mr, mr_lim, mr_strict, w2_vector, w3_aerosol, wt_aerosol  )
 
     nummr_to_transport = 1_i_def
 
@@ -409,11 +416,19 @@ contains
                                     mesh, nodal_output_on_w3 )
       call write_scalar_diagnostic( 'tracer_con', tracer_con, modeldb%clock, &
                                     mesh, nodal_output_on_w3 )
+      call write_scalar_diagnostic( 'tracer_con_lim', tracer_con_lim, modeldb%clock, &
+                                    mesh, nodal_output_on_w3 )
+      call write_scalar_diagnostic( 'tracer_con_strict', tracer_con_strict, modeldb%clock, &
+                                    mesh, nodal_output_on_w3 )
       call write_scalar_diagnostic( 'tracer_adv', tracer_adv, modeldb%clock, &
                                     mesh, nodal_output_on_w3 )
       call write_scalar_diagnostic( 'constant', constant, modeldb%clock, &
                                     mesh, nodal_output_on_w3 )
       call write_scalar_diagnostic( 'm_v', mr(1), modeldb%clock, &
+                                    mesh, nodal_output_on_w3 )
+      call write_scalar_diagnostic( 'm_v_lim', mr_lim(1), modeldb%clock, &
+                                    mesh, nodal_output_on_w3 )
+      call write_scalar_diagnostic( 'm_v_strict', mr_strict(1), modeldb%clock, &
                                     mesh, nodal_output_on_w3 )
       call write_scalar_diagnostic( 'divergence', divergence, modeldb%clock, &
                                     mesh, nodal_output_on_w3 )
@@ -487,9 +502,13 @@ contains
     call log_field_minmax( LOG_LEVEL_INFO, 'rho', density )
     call log_field_minmax( LOG_LEVEL_INFO, 'theta', theta )
     call log_field_minmax( LOG_LEVEL_INFO, 'tracer_con', tracer_con )
+    call log_field_minmax( LOG_LEVEL_INFO, 'tracer_con_lim', tracer_con_lim )
+    call log_field_minmax( LOG_LEVEL_INFO, 'tracer_con_strict', tracer_con_strict )
     call log_field_minmax( LOG_LEVEL_INFO, 'tracer_adv', tracer_adv )
     call log_field_minmax( LOG_LEVEL_INFO, 'constant', constant )
     call log_field_minmax( LOG_LEVEL_INFO, 'm_v', mr(1) )
+    call log_field_minmax( LOG_LEVEL_INFO, 'm_v_lim', mr_lim(1) )
+    call log_field_minmax( LOG_LEVEL_INFO, 'm_v_strict', mr_strict(1) )
 
     mesh => mesh_collection%get_mesh(prime_mesh_name)
     if (use_multires_coupling) then
@@ -508,7 +527,9 @@ contains
 
     call transport_step( model_clock,                          &
                          wind, density, theta, tracer_con,     &
-                         tracer_adv, constant, mr, w2_vector,  &
+                         tracer_con_lim, tracer_con_strict,    &
+                         tracer_adv, constant, mr, mr_lim,     &
+                         mr_strict, w2_vector,                 &
                          w3_aerosol, wt_aerosol, aerosol_wind, &
                          nummr_to_transport )
 
@@ -520,9 +541,13 @@ contains
     call log_field_minmax( LOG_LEVEL_INFO, 'rho', density )
     call log_field_minmax( LOG_LEVEL_INFO, 'theta', theta )
     call log_field_minmax( LOG_LEVEL_INFO, 'tracer_con', tracer_con )
+    call log_field_minmax( LOG_LEVEL_INFO, 'tracer_con_lim', tracer_con_lim )
+    call log_field_minmax( LOG_LEVEL_INFO, 'tracer_con_strict', tracer_con_strict )
     call log_field_minmax( LOG_LEVEL_INFO, 'tracer_adv', tracer_adv )
     call log_field_minmax( LOG_LEVEL_INFO, 'constant', constant )
     call log_field_minmax( LOG_LEVEL_INFO, 'm_v', mr(1) )
+    call log_field_minmax( LOG_LEVEL_INFO, 'm_v_lim', mr_lim(1) )
+    call log_field_minmax( LOG_LEVEL_INFO, 'm_v_strict', mr_strict(1) )
     if (use_aerosols) then
       call log_field_minmax( LOG_LEVEL_INFO, 'w3_aerosol', w3_aerosol )
       call log_field_minmax( LOG_LEVEL_INFO, 'wt_aerosol', wt_aerosol )
@@ -549,11 +574,19 @@ contains
                                     model_clock, mesh, nodal_output_on_w3 )
       call write_scalar_diagnostic( 'tracer_con', tracer_con, &
                                     model_clock, mesh, nodal_output_on_w3 )
+      call write_scalar_diagnostic( 'tracer_con_lim', tracer_con_lim, &
+                                    model_clock, mesh, nodal_output_on_w3 )
+      call write_scalar_diagnostic( 'tracer_con_strict', tracer_con_strict, &
+                                    model_clock, mesh, nodal_output_on_w3 )
       call write_scalar_diagnostic( 'tracer_adv', tracer_adv, &
                                     model_clock, mesh, nodal_output_on_w3 )
       call write_scalar_diagnostic( 'constant', constant,     &
                                     model_clock, mesh, nodal_output_on_w3 )
       call write_scalar_diagnostic( 'm_v', mr(1),             &
+                                    model_clock, mesh, nodal_output_on_w3 )
+      call write_scalar_diagnostic( 'm_v_lim', mr_lim(1),     &
+                                    model_clock, mesh, nodal_output_on_w3 )
+      call write_scalar_diagnostic( 'm_v_strict', mr_strict(1), &
                                     model_clock, mesh, nodal_output_on_w3 )
       call write_scalar_diagnostic( 'divergence', divergence, &
                                     model_clock, mesh, nodal_output_on_w3 )
@@ -585,8 +618,9 @@ contains
     character(*),        intent(in)    :: program_name
     class(modeldb_type), intent(inout) :: modeldb
 
-    call transport_final( density, theta, tracer_con, tracer_adv, &
-                          constant, mr, w2_vector, w3_aerosol, wt_aerosol )
+    call transport_final( density, theta, tracer_con, tracer_con_lim,  &
+                          tracer_con_strict, tracer_adv, constant, mr, &
+                          mr_lim, mr_strict, w2_vector, w3_aerosol, wt_aerosol )
 
     !--------------------------------------------------------------------------
     ! Model finalise

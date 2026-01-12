@@ -13,6 +13,7 @@ use constants_mod,           only: r_def, i_def, pi
 use extrusion_config_mod,    only: domain_height
 use initial_wind_config_mod, only: nl_constant,                     &
                                    profile_sbr_streamfunction,      &
+                                   profile_solid_body_rotation,     &
                                    profile_dcmip301_streamfunction, &
                                    profile_div_free_reversible,     &
                                    profile_eternal_fountain,        &
@@ -56,7 +57,7 @@ function analytic_streamfunction( chi, choice, num_options,    &
   real(kind=r_def)                :: lat_pole, lon_pole
   real(kind=r_def)                :: u0, v0, long_dash, time_period, L
   real(kind=r_def)                :: vortex_zcentre, la, lb, ld, lr
-  real(kind=r_def)                :: coeffs(4)
+  real(kind=r_def)                :: coeffs(4), angle
 
   select case ( choice )
 
@@ -73,6 +74,14 @@ function analytic_streamfunction( chi, choice, num_options,    &
       psi(2) = 0.0_r_def
       psi(3) = s * option(1) * scaled_radius * &
                (sin(lat_pole)*sin(chi(2)) - cos(lat_pole)*sin(chi(1)-lon_pole)*cos(chi(2)) )
+
+  case ( profile_solid_body_rotation )
+
+      angle  = 0.0_r_def
+      psi(1) = 0.0_r_def
+      psi(2) = 0.0_r_def
+      psi(3) = -option(1) * scaled_radius * &
+               (cos(angle)*sin(chi(2)) - sin(angle)*cos(chi(1))*cos(chi(2)) )
 
   case ( profile_eternal_fountain )
     ! The eternal fountain profile from Zerroukat & Allen 2020 SLIC paper

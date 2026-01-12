@@ -44,8 +44,9 @@ use idealised_config_mod,       only : test_cold_bubble_x,           &
                                        test_rotational,              &
                                        test_translational,           &
                                        test_vertical_cylinder
-use initial_density_config_mod, only : r1, x1, y1, z1, r2, x2, y2, z2, &
-                                       density_max, density_background
+use initial_density_config_mod, only : r1, x1, y1, z1, r2, x2, y2, z2,  &
+                                       density_max, density_background, &
+                                       variable_density
 use base_mesh_config_mod,       only : geometry, &
                                        geometry_spherical
 use planet_config_mod,          only : p_zero, Rd, kappa, scaled_radius
@@ -201,7 +202,13 @@ function analytic_density(chi, choice, time) result(density)
         test_div_free_reversible, test_vertical_cylinder, test_yz_cosine_hill, &
         test_constant_field, test_slotted_cylinder )
 
-    density = density_background
+        if (variable_density) then
+          density = density_background + (density_max - density_background) &
+                                         * sin(2.0_r_def*chi(2))            &
+                                         * cos(2.0_r_def*(chi(1)-PI/4.0_r_def))
+        else
+          density = density_background
+        end if
 
   case( test_cosine_hill )
     if ( l1 < r1 ) then

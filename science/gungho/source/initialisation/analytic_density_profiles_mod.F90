@@ -200,7 +200,7 @@ function analytic_density(chi, choice, time) result(density)
   case( test_eternal_fountain, test_rotational, test_cos_phi,                  &
         test_curl_free_reversible, test_translational,                         &
         test_div_free_reversible, test_vertical_cylinder, test_yz_cosine_hill, &
-        test_constant_field, test_slotted_cylinder )
+        test_constant_field, test_slotted_cylinder, test_gaussian_hill )
 
         if (variable_density) then
           density = density_background + (density_max - density_background) &
@@ -224,8 +224,7 @@ function analytic_density(chi, choice, time) result(density)
     density = 0.5_r_def*(h1 + h2)
 
   ! For 3D spherical transport miniapp tests we set height based density
-  case( test_cosine_bell, test_hadley_like_dcmip, &
-        test_gaussian_hill )
+  case( test_cosine_bell, test_hadley_like_dcmip )
 
     ! Use values from Kent et al. (2014), Dynamical Core Model Intercomparison
     ! Project: Tracer Transport Test Cases, QJRMS

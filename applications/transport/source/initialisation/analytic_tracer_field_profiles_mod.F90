@@ -117,8 +117,13 @@ function analytic_tracer_field(chi, choice, domain_max_x) result(tracer)
   select case( choice )
 
   case( test_gaussian_hill )
-    h1 = field_max*exp( -(l1/r1)**2 )
-    h2 = field_max*exp( -(l2/r2)**2 )
+
+    h1 = field_max*exp( -r1*( ( cos(lat)*cos(long) - cos(y1)*cos(x1) )**2 &
+                            + ( cos(lat)*sin(long) - cos(y1)*sin(x1) )**2 &
+                            + ( sin(lat) - sin(y1) )**2 ) )
+    h2 = field_max*exp( -r2*( ( cos(lat)*cos(long) - cos(y2)*cos(x2) )**2 &
+                            + ( cos(lat)*sin(long) - cos(y2)*sin(x2) )**2 &
+                            + ( sin(lat) - sin(y2) )**2 ) )
     tracer = field_background + h1 + h2
 
   case( test_cosine_hill )

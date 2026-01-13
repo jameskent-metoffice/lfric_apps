@@ -368,7 +368,7 @@ contains
                                     tracer_con, tracer_con_lim,    &
                                     tracer_con_strict, tracer_adv, &
                                     constant, mr, mr_lim,          &
-                                    mr_strictw2_vector,            &
+                                    mr_strict,w2_vector,           &
                                     aerosol_mesh, aerosol_wind,    &
                                     w3_aerosol,  wt_aerosol,       &
                                     divergence )

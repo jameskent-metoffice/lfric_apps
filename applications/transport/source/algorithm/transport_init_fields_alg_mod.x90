@@ -173,9 +173,9 @@ subroutine transport_init_fields_alg( mesh,              &
     call w2_vector%initialise( name='w2_vector', vector_space=w2_fs )
     call divergence%initialise( name='divergence', vector_space=w3_fs )
     do imr = 1, nummr
-      call mr(imr)%initialise( name=trim(m_v), vector_space=wt_fs )
-      call mr_lim(imr)%initialise( name=trim(m_v_lim), vector_space=wt_fs )
-      call mr_strict(imr)%initialise( name=trim(m_v_strict), vector_space=wt_fs )
+      call mr(imr)%initialise( name=trim('mr'), vector_space=wt_fs )
+      call mr_lim(imr)%initialise( name=trim('mr_lim'), vector_space=wt_fs )
+      call mr_strict(imr)%initialise( name=trim('mr_strict'), vector_space=wt_fs )
     end do
     call aerosol_wind%initialise( name='aerosol_wind', vector_space=w2_aerosol_fs )
     call w3_aerosol%initialise( name='w3_aerosol', vector_space=w3_aerosol_fs )

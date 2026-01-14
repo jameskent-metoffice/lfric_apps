@@ -132,6 +132,8 @@
         "transport_swift_nl_gaussian_bigcfl-C96_ex1a_cce_fast-debug-64bit",
         "transport_swift_nlvd_cylinder-C96_ex1a_cce_fast-debug-64bit",
         "transport_swift_nlvd_cylinder_bigcfl-C96_ex1a_cce_fast-debug-64bit",
+        "transport_swift_nlvd_cylinder-C192_ex1a_cce_fast-debug-64bit",
+        "transport_swift_nlvd_cylinder_bigcfl-C192_ex1a_cce_fast-debug-64bit",
         "transport_swift_nlvd_gaussian-C96_ex1a_cce_fast-debug-64bit",
         "transport_swift_nlvd_gaussian_bigcfl-C96_ex1a_cce_fast-debug-64bit",
         "transport_swift_nlvd_gaussian-C48_ex1a_cce_fast-debug-64bit",

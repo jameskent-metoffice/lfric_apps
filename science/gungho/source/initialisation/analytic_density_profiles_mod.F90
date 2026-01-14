@@ -204,8 +204,8 @@ function analytic_density(chi, choice, time) result(density)
 
         if (variable_density) then
           density = density_background + (density_max - density_background) &
-                                         * sin(2.0_r_def*chi(2))            &
-                                         * cos(2.0_r_def*(chi(1)-PI/4.0_r_def))
+                                         * sin(2.0_r_def*lat)            &
+                                         * cos(2.0_r_def*(long-PI/4.0_r_def))
         else
           density = density_background
         end if

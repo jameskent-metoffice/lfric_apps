@@ -107,6 +107,18 @@
         "transport_ex1a_unit_tests",
         "transport_ex1a_canned",
     ],
+    "transport_ex1a_new_edge": [
+        "transport_sbr_swift_remap-C32_ex1a_cce_fast-debug-64bit",
+        "transport_sbr_swift_edges-C32_ex1a_cce_fast-debug-64bit",
+        "transport_sbr_swift_overset-C32_ex1a_cce_fast-debug-64bit",
+        "transport_sbr_swift_none-C32_ex1a_cce_fast-debug-64bit",
+        "transport_sbr_swift_average-C32_ex1a_cce_fast-debug-64bit",
+        "transport_sbr_swift_remap_bigcfl-C32_ex1a_cce_fast-debug-64bit",
+        "transport_sbr_swift_edges_bigcfl-C32_ex1a_cce_fast-debug-64bit",
+        "transport_sbr_swift_overset_bigcfl-C32_ex1a_cce_fast-debug-64bit",
+        "transport_sbr_swift_none_bigcfl-C32_ex1a_cce_fast-debug-64bit",
+        "transport_sbr_swift_average_bigcfl-C32_ex1a_cce_fast-debug-64bit",
+    ],
     "transport_ex1a_swift_sbr": [
         "transport_sbr_swift_remap-C32_ex1a_cce_fast-debug-64bit",
         "transport_sbr_swift_edges-C32_ex1a_cce_fast-debug-64bit",

@@ -78,6 +78,7 @@ module ffsl_hori_alg_mod
   use transport_config_mod,             only:                                  &
                                           panel_edge_treatment,                &
                                           panel_edge_treatment_extended_mesh,  &
+                                          panel_edge_treatment_average,        &
                                           panel_edge_treatment_special_edges,  &
                                           panel_edge_treatment_remapping,      &
                                           panel_edge_high_order,               &
@@ -561,6 +562,8 @@ contains
 
     ! Fields and increments
     type(r_tran_field_type), target :: field_big_halo
+    type(r_tran_field_type)         :: field_big_extended
+    type(r_tran_field_type)         :: field_big_native
 
     type(r_tran_field_type) :: flux_broken
     type(r_tran_field_type) :: increment_x
@@ -720,6 +723,20 @@ contains
                                   transport_metadata%get_enforce_min_value(),  &
                                   transport_metadata%get_min_value(),          &
                                   remap_depth)
+    else if ( panel_edge_treatment == panel_edge_treatment_average ) then
+      monotone_remap = ( monotone /= monotone_none )
+      remap_depth = stencil_extent
+      call remap_on_extended_mesh(field_big_extended, field_n, monotone_remap, &
+                                  transport_metadata%get_enforce_min_value(),  &
+                                  transport_metadata%get_min_value(),          &
+                                  remap_depth)
+      call field_big_native%initialise( field_n%get_function_space(), &
+                                      halo_depth=get_required_stencil_depth() )
+      call field_big_halo%initialise( field_n%get_function_space(), &
+                                      halo_depth=get_required_stencil_depth() )
+      call invoke( setval_x(field_big_native, field_n),                       &
+                   aX_plus_bY(field_big_halo, 0.5_r_tran, field_big_extended, &
+                                              0.5_r_tran, field_big_native) )
     else
       call field_big_halo%initialise( field_n%get_function_space(), &
                                       halo_depth=get_required_stencil_depth() )
@@ -813,7 +830,8 @@ contains
     if ( subroutine_timers ) call timer('transport.ffsl_hori_sweeps')
 
     ! fluxes may need unifying to guarantee a unique flux for each face --------
-    if ( panel_edge_treatment == panel_edge_treatment_extended_mesh ) then
+    if ( panel_edge_treatment == panel_edge_treatment_extended_mesh .or. &
+         panel_edge_treatment == panel_edge_treatment_average ) then
       if ( subroutine_timers ) call timer('transport.ffsl_flux_unify')
       w2b_fs => function_space_collection%get_fs(mesh, 0, 0, W2Hbroken)
       call flux_broken%initialise( w2b_fs )
@@ -907,6 +925,10 @@ contains
     ! Fields and increments
     type(r_tran_field_type) :: field_x_big_halo
     type(r_tran_field_type) :: field_y_big_halo
+    type(r_tran_field_type) :: field_x_big_native
+    type(r_tran_field_type) :: field_y_big_native
+    type(r_tran_field_type) :: field_x_big_extend
+    type(r_tran_field_type) :: field_y_big_extend
     type(r_tran_field_type) :: field_x_remapped
     type(r_tran_field_type) :: field_y_remapped
     type(r_tran_field_type) :: flux_broken
@@ -1087,6 +1109,28 @@ contains
                                   transport_metadata%get_enforce_min_value(),  &
                                   transport_metadata%get_min_value(),          &
                                   remap_depth)
+    else if ( panel_edge_treatment == panel_edge_treatment_average ) then
+      monotone_remap = ( monotone /= monotone_none )
+      remap_depth = stencil_extent
+      call remap_on_extended_mesh(field_x_big_extend, field_x, monotone_remap, &
+                                  transport_metadata%get_enforce_min_value(),  &
+                                  transport_metadata%get_min_value(),          &
+                                  remap_depth)
+      call remap_on_extended_mesh(field_y_big_extend, field_y, monotone_remap, &
+                                  transport_metadata%get_enforce_min_value(),  &
+                                  transport_metadata%get_min_value(),          &
+                                  remap_depth)
+
+      call field_x_big_halo%initialise(field_fs, halo_depth=get_required_stencil_depth())
+      call field_y_big_halo%initialise(field_fs, halo_depth=get_required_stencil_depth())
+      call field_x_big_native%initialise(field_fs, halo_depth=get_required_stencil_depth())
+      call field_y_big_native%initialise(field_fs, halo_depth=get_required_stencil_depth())
+      call invoke( setval_x(field_x_big_native, field_x),                        &
+                   aX_plus_bY(field_x_big_halo, 0.5_r_tran, field_x_big_extend,  &
+                                                0.5_r_tran, field_x_big_native), &
+                   setval_x(field_y_big_native, field_y),                        &
+                   aX_plus_bY(field_y_big_halo, 0.5_r_tran, field_y_big_extend,  &
+                                                0.5_r_tran, field_y_big_native) )
     else
       call field_x_big_halo%initialise(field_fs, halo_depth=get_required_stencil_depth())
       call field_y_big_halo%initialise(field_fs, halo_depth=get_required_stencil_depth())
@@ -1182,7 +1226,8 @@ contains
     if ( subroutine_timers ) call timer('transport.ffsl_hori_sweeps')
 
     ! fluxes may need unifying to guarantee a unique flux for each face --------
-    if ( panel_edge_treatment == panel_edge_treatment_extended_mesh ) then
+    if ( panel_edge_treatment == panel_edge_treatment_extended_mesh .or. &
+         panel_edge_treatment == panel_edge_treatment_average ) then
       if ( subroutine_timers ) call timer('transport.ffsl_flux_unify')
       w2b_fs => function_space_collection%get_fs(mesh, 0, 0, W2Hbroken)
       call flux_broken%initialise( w2b_fs )

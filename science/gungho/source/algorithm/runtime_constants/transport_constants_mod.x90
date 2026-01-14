@@ -601,8 +601,9 @@ contains
 
     use sci_geometric_constants_mod,    only: get_detj_at_w3_fe, &
                                               get_detj_at_w3_fv
-    use transport_config_mod,           only: panel_edge_treatment,            &
-                                              panel_edge_treatment_extended_mesh
+    use transport_config_mod,           only: panel_edge_treatment,               &
+                                              panel_edge_treatment_extended_mesh, &
+                                              panel_edge_treatment_average
     use sci_calc_detj_at_w3_kernel_mod, only: calc_detj_at_w3_kernel_type
 
     implicit none

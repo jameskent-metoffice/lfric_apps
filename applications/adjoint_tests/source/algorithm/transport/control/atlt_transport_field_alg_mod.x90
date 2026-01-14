@@ -40,7 +40,7 @@ module atlt_transport_field_alg_mod
                                                   direction_h,  &
                                                   direction_v
   use fs_continuity_mod,                   only : W3
-  
+
   implicit none
 
   private
@@ -111,7 +111,7 @@ module atlt_transport_field_alg_mod
     type(r_tran_field_type)                            :: tctr_field_n_inp
     type(r_tran_field_type), dimension(:), allocatable :: tctr_flux_inp
     type(function_space_type), pointer :: vector_space_w3_ptr
-    
+
     ! Test parameters and variables
     real(kind=r_def),    parameter :: overall_tolerance = 1500.0_r_def
     real(kind=r_def)               :: machine_tol
@@ -164,7 +164,7 @@ module atlt_transport_field_alg_mod
          mesh, element_order_h, element_order_v, W3 &
          )
     call field_n%initialise(vector_space = vector_space_w3_ptr)
-    
+
     call field_n%copy_field_properties( field_np1 )
     call field_n%copy_field_properties( ls_field_n )
 
@@ -210,7 +210,7 @@ module atlt_transport_field_alg_mod
     call wind_pc_dir_prod_rdef( inner1, pert_transport_controller, mesh_id, direction_v )
     call wind_pc_dir_prod_rdef( inner1, pert_transport_controller, mesh_id, direction_3d )
     call counter_flux_prod_rdef( inner1, pert_transport_controller )
-    
+
     ! Scaling fields
     call invoke( inc_a_times_X( field_np1_sf, field_np1 ), &
                  inc_a_times_X( field_n_sf, field_n ) )

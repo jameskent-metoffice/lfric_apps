@@ -306,7 +306,7 @@
 {% elif task_ns.conf_name == "sbr_swift_none-C32" %}
 
     {% do task_dict.update({
-        "opt_confs": ["sbr_none_remap"],
+        "opt_confs": ["sbr_swift"],
         "resolution": "C32",
         "DT": 3600,
         "tsteps": 288,
@@ -320,7 +320,7 @@
 {% elif task_ns.conf_name == "sbr_swift_none_bigcfl-C32" %}
 
     {% do task_dict.update({
-        "opt_confs": ["sbr_swift_none","sbr_swift_bigcfl"],
+        "opt_confs": ["sbr_swift","sbr_swift_bigcfl"],
         "resolution": "C32",
         "DT": 14400,
         "tsteps": 72,
@@ -334,7 +334,7 @@
 {% elif task_ns.conf_name == "sbr_swift_none-C96" %}
 
     {% do task_dict.update({
-        "opt_confs": ["sbr_swift_none"],
+        "opt_confs": ["sbr_swift"],
         "resolution": "C96",
         "DT": 3600,
         "tsteps": 288,
@@ -348,7 +348,7 @@
 {% elif task_ns.conf_name == "sbr_swift_none_bigcfl-C96" %}
 
     {% do task_dict.update({
-        "opt_confs": ["sbr_swift_none","sbr_swift_bigcfl"],
+        "opt_confs": ["sbr_swift","sbr_swift_bigcfl"],
         "resolution": "C96",
         "DT": 14400,
         "tsteps": 72,
@@ -441,7 +441,7 @@
 
     {% do task_dict.update({
         "opt_confs": ["swift_nlvd_gaussian"],
-        "resolution": "C96",
+        "resolution": "C48",
         "DT": 2400,
         "tsteps": 432,
         "mpi_parts": 6,
@@ -454,7 +454,7 @@
 
     {% do task_dict.update({
         "opt_confs": ["swift_nlvd_gaussian","swift_nl_bigcfl"],
-        "resolution": "C96",
+        "resolution": "C48",
         "DT": 9600,
         "tsteps": 108,
         "mpi_parts": 6,

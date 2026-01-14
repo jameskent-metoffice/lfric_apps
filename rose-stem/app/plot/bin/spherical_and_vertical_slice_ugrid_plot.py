@@ -437,18 +437,32 @@ def make_figures(filein, plotpath, field_list, slice_list,
                             contour_lines.append(contour)
 
                 elif (testname == 'nl'):
-                    step = 0.1
-                    tracer_background = 0.0
-                    tracer_max = 1.0
-                    max_field = tracer_max + 2*step
-                    min_field = tracer_background - 2*step
-                    contour_colours = np.arange(min_field, max_field+step,
-                                                step=step)
-                    contour_lines = []
-                    epsilon = 1e-14
-                    for contour in contour_colours:
-                        if abs(contour - tracer_background) > epsilon:
-                            contour_lines.append(contour)
+                    if (field in ['density', 'rho']):
+                        step = 0.05
+                        tracer_background = 0.6
+                        tracer_max = 1.0
+                        max_field = tracer_max + 2*step
+                        min_field = tracer_background - 2*step
+                        contour_colours = np.arange(min_field, max_field+step,
+                                                    step=step)
+                        contour_lines = []
+                        epsilon = 1e-14
+                        for contour in contour_colours:
+                            if abs(contour - tracer_background) > epsilon:
+                                contour_lines.append(contour)
+                    else:
+                        step = 0.1
+                        tracer_background = 0.0
+                        tracer_max = 1.0
+                        max_field = tracer_max + 2*step
+                        min_field = tracer_background - 2*step
+                        contour_colours = np.arange(min_field, max_field+step,
+                                                    step=step)
+                        contour_lines = []
+                        epsilon = 1e-14
+                        for contour in contour_colours:
+                            if abs(contour - tracer_background) > epsilon:
+                                contour_lines.append(contour)
 
 
                 elif (testname in ['cylinder', 'div_free',

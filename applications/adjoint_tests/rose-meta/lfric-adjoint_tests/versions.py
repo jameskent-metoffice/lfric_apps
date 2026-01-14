@@ -44,8 +44,8 @@ class vn30_t108(MacroUpgrade):
             config, ["namelist:planet", "scaling_factor"]
         )
         if "125.0" in scaling:
-            self.add_setting(config, ["namelist:linear", "mol_efficiency"], ".false.")
+            self.add_setting(config, ["namelist:linear", "transport_efficiency"], ".false.")
         else:
-            self.add_setting(config, ["namelist:linear", "mol_efficiency"], ".true.")
+            self.add_setting(config, ["namelist:linear", "transport_efficiency"], ".true.")
 
         return config, self.reports

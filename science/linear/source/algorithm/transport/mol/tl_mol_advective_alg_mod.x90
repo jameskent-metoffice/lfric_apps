@@ -28,6 +28,7 @@ module tl_mol_advective_alg_mod
 
   ! Configuration
   use transport_config_mod,             only: runge_kutta_method
+  use linear_config_mod,                only: transport_efficiency
 
   implicit none
 
@@ -58,7 +59,9 @@ contains
     ! Internal variables
     integer(kind=i_def)                      :: stage, s, direction
     integer(kind=i_def)                      :: nstage, substep
+    integer(kind=i_def)                      :: ls_nstage, ls_substep
     integer(kind=i_def)                      :: number_substeps
+    integer(kind=i_def)                      :: ls_stage, ls_number_substeps
     integer(kind=i_def)                      :: step
     integer(kind=i_def)                      :: splitting
     real(kind=r_def)                         :: dt_mol_substep
@@ -117,13 +120,23 @@ contains
     call field_n%initialise(field%get_function_space())
 
     call get_rk_transport_weights(nstage, rk_weights, runge_kutta_method)
+
+    if (transport_efficiency) then
+      ls_number_substeps = 1
+      ls_nstage =1
+    else
+      ls_number_substeps = number_substeps
+      ls_nstage = nstage
+    end if
     allocate( rk_field(nstage) )
-    allocate( stored_ls_field(number_substeps, nstage) )
+    allocate( stored_ls_field(ls_number_substeps, ls_nstage) )
 
     do stage = 1, nstage
       call rk_field(stage)%initialise(field%get_function_space())
-      do substep = 1, number_substeps
-        call stored_ls_field(substep, stage)%initialise(field%get_function_space())
+    end do
+    do ls_stage = 1, ls_nstage
+      do ls_substep = 1, ls_number_substeps
+        call stored_ls_field(ls_substep, ls_stage)%initialise(field%get_function_space())
       end do
     end do
     call rhs_field%initialise( field%get_function_space() )
@@ -140,19 +153,23 @@ contains
     !       array for each substep and each RK stage to use in the perturbation
     !--------------------------------------------------------------------------!
 
+    if (transport_efficiency) then
+      call invoke( setval_X( stored_ls_field(1,1), ls_field_np1))
+    else
+ 
     ! Perform the number of rk-stages and substeps required
-    do substep = 1, number_substeps
+    do substep = 1, ls_number_substeps
 
       ! Reset field_n ready for the this substep
       call ls_field_np1%copy_field_properties(ls_field_n)
       call invoke( setval_X(ls_field_n, ls_field_np1) )
 
-      do stage = 1, nstage
+      do stage = 1, ls_nstage
         ! Store values for use in the perturbation code. This is done before
         ! advecting so as to pick up the correct linearisation state
         call invoke( setval_X(stored_ls_field(substep, stage), ls_field_np1) )
 
-        final_rk_stage = ( stage == nstage )
+        final_rk_stage = ( stage == ls_nstage )
 
         ! Compute the field for this stage:
         ! rhs_field = sum(s=1,stage): a(stage,s)*field^(s)
@@ -179,6 +196,8 @@ contains
             ls_field_np1, ls_field_n, ls_transport_counter, ls_transport_metadata &
     )
 
+    end if
+
     ! --------------------------------------------------------------------------
     !                    Perturbation
     !
@@ -187,14 +206,27 @@ contains
     !   linearisation stage stage
     !---------------------------------------------------------------------------
 
+    
     ! Perform the number of rk-stages and substeps required
     do substep = 1, number_substeps
+
+      if (transport_efficiency) then
+        ls_substep = 1
+      else
+        ls_substep = substep
+      end if
 
       ! Reset field_n ready for the this substep
       call field_np1%copy_field_properties(field_n)
       call invoke( setval_X(field_n, field_np1) )
 
       do stage = 1, nstage
+
+        if (transport_efficiency) then
+          ls_stage = 1
+        else
+          ls_stage = stage
+        end if
 
         final_rk_stage = ( stage == nstage )
 
@@ -209,7 +241,7 @@ contains
         ! Compute update: rhs = u.grad(rhs_field)
         call tl_advective_and_flux_alg(                                        &
                 dummy, dummy, rhs, rhs_field, advecting_wind,                  &
-                stored_ls_field(substep, stage), ls_advecting_wind,            &
+                stored_ls_field(ls_substep, ls_stage), ls_advecting_wind,      &
                 direction, transport_metadata, final_rk_stage, dt_mol_substep, &
                 .false., .true.                                                &
         )

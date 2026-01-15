@@ -209,7 +209,7 @@ module atl_mol_conservative_alg_mod
     !       This calculates the values of ls_field. These are stored as an
     !       array for each substep and each RK stage to use in the perturbation
     ! ======================================================================== !
-    
+
      if ( transport_efficiency ) then
        call invoke( setval_X( stored_ls_field(1,1), ls_field_np1 ) )
      else
@@ -356,7 +356,7 @@ module atl_mol_conservative_alg_mod
         ls_substep = 1
       else
         ls_substep = substep
-      end if  
+      end if
 
       final_substep = ( substep == number_substeps )
 

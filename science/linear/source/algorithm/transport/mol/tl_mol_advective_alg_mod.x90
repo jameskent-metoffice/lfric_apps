@@ -156,7 +156,7 @@ contains
     if (transport_efficiency) then
       call invoke( setval_X( stored_ls_field(1,1), ls_field_np1))
     else
- 
+
     ! Perform the number of rk-stages and substeps required
     do substep = 1, ls_number_substeps
 
@@ -206,7 +206,7 @@ contains
     !   linearisation stage stage
     !---------------------------------------------------------------------------
 
-    
+
     ! Perform the number of rk-stages and substeps required
     do substep = 1, number_substeps
 

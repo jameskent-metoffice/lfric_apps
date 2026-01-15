@@ -79,7 +79,7 @@ def make_figures(filein, plotpath, field_list, slice_list,
         zmin = 0.0
         zmax = 2400.
 
-    elif testname in ['baroclinic', 'aquaplanet', 'spherical', 'lam_gw',
+    elif testname in ['baroclinic', 'aquaplanet', 'spherical', 'lam_gw', 'lip',
                       'sbr', 'dcmip101', 'vert_def', 'hadley', 'cos_phi',
                       'four_part_sbr', 'deformation', 'divergent', 'nl']:
         spherical = True
@@ -92,7 +92,7 @@ def make_figures(filein, plotpath, field_list, slice_list,
         elif testname == 'lam_gw':
             zmin = 0.0
             zmax = 10000.0  # A 10 km lid
-        elif testname in ['sbr', 'dcmip101', 'vert_def', 'hadley']:
+        elif testname in ['sbr', 'dcmip101', 'vert_def', 'hadley','lip']:
             zmin = 0.0
             zmax = 12000.0  # A 12 km lid
         elif spherical:
@@ -488,7 +488,7 @@ def make_figures(filein, plotpath, field_list, slice_list,
                         if abs(contour - tracer_background) > epsilon:
                             contour_lines.append(contour)
 
-                elif (testname in ['hadley', 'cos_phi', 'deformation','divergent']
+                elif (testname in ['hadley', 'cos_phi', 'deformation','divergent','lip']
                       or (testname in ['sbr', 'dcmip101', 'vert_def'] and
                           field in ['density', 'rho'])):
                     step = 0.1

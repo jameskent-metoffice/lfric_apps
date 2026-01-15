@@ -22,6 +22,7 @@ use idealised_config_mod,       only : test_gaussian_hill,        &
                                        test_slotted_cylinder,     &
                                        test_constant_field,       &
                                        test_hadley_like_dcmip,    &
+                                       test_hadley_lipschitz,     &
                                        test_cosine_stripe,        &
                                        test_cos_phi,              &
                                        test_cosine_bubble,        &
@@ -198,8 +199,18 @@ function analytic_tracer_field(chi, choice, domain_max_x) result(tracer)
   case( test_hadley_like_dcmip )
     tracer = hadley_like_dcmip(radius)
 
+  case( test_hadley_lipschitz )
+
+    if ( (radius - scaled_radius) > 2000.0_r_def .AND. &
+         (radius - scaled_radius) < 5000.0_r_def ) then
+      tracer = 1.0_r_def
+    else
+      tracer = 0.1_r_def
+    end if
+
   case( test_cos_phi )
-    tracer = field_max*cos(lat)**4
+    !tracer = field_max*cos(lat)**4
+    tracer = field_max*cos(lat)
 
   case( test_cosine_bubble )
     l1 = sqrt( ((chi(1) - x1)/r1)**2 + ((chi(3) - y1)/r2)**2 )

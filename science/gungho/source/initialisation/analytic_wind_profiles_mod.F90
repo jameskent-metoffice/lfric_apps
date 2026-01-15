@@ -27,6 +27,7 @@ use initial_wind_config_mod,  only: profile_none,                         &
                                     profile_NL_case_3,                    &
                                     profile_NL_case_4,                    &
                                     profile_hadley_like_dcmip,            &
+                                    profile_hadley_lipschitz,             &
                                     profile_curl_free_reversible,         &
                                     profile_sbr_with_vertical,            &
                                     profile_dcmip_101,                    &
@@ -50,6 +51,7 @@ private :: NL_wind_case_4
 private :: xy_NL_wind_case_1
 private :: yz_NL_wind_case_1
 private :: hadley_like_dcmip
+private :: hadley_lipschitz
 private :: xy2longlat
 private :: yz2longlat
 private :: curl_free_reversible
@@ -57,6 +59,31 @@ private :: curl_free_reversible
 public :: analytic_wind
 
 contains
+
+!> @brief Compute wind field for large vertical Lipschitz test
+!> @param[in] lat Latitudinal position
+!> @param[in] height Radial distance
+!> @result u Result wind field vector (u,v,w)
+function hadley_lipschitz(lat,height) result(u)
+  implicit none
+  real(kind=r_def), intent(in)    :: lat
+  real(kind=r_def), intent(in)    :: height
+  real(kind=r_def), dimension(3)  :: u
+
+  real(kind=r_def)             :: w0, k, top_of_atmosphere, l, z, sh
+
+  k = 5.0_r_def
+  w0 = 0.12_r_def / k
+  top_of_atmosphere = 12000.0_r_def
+  l = pi/top_of_atmosphere
+  z = height-scaled_radius
+  sh = 2.0_r_def
+
+  u(1) = 0
+  u(2) = sh * (-scaled_radius*w0*l)*cos(lat)*sin(k*lat)*cos(sh*l*z)
+  u(3) = 2.0_r_def*sh * w0*(-2.0_r_def*sin(k*lat)*sin(lat)+k*cos(k*lat)*cos(lat))*sin(sh*l*z)
+
+end function hadley_lipschitz
 
 !> @brief Compute wind field for Hadley-like DCMIP test
 !> @param[in] lat Latitudinal position
@@ -556,6 +583,8 @@ function analytic_wind( chi, time, choice, num_options, &
                              domain_max_y )
     case ( profile_hadley_like_dcmip )
       u = hadley_like_dcmip(chi(2),chi(3),time)
+    case ( profile_hadley_lipschitz )
+      u = hadley_lipschitz(chi(2),chi(3))
     case ( profile_curl_free_reversible )
       u = curl_free_reversible( chi(1), chi(3), time, &
                                 domain_max_x )

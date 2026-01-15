@@ -25,6 +25,7 @@ use idealised_config_mod,       only : test_cold_bubble_x,           &
                                        test_slotted_cylinder,        &
                                        test_constant_field,          &
                                        test_hadley_like_dcmip,       &
+                                       test_hadley_lipschitz,        &
                                        test_cosine_stripe,           &
                                        test_vortex_field,            &
                                        test_gravity_wave,            &
@@ -222,6 +223,11 @@ function analytic_density(chi, choice, time) result(density)
       h2 = density_background
     end if
     density = 0.5_r_def*(h1 + h2)
+
+  ! Lipschitz test
+  case( test_hadley_lipschitz )
+
+    density = 1.0
 
   ! For 3D spherical transport miniapp tests we set height based density
   case( test_cosine_bell, test_hadley_like_dcmip )

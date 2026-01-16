@@ -43,7 +43,7 @@ class vn30_t108(MacroUpgrade):
         )
         if ".true." in fixed_ls:
             self.add_setting(
-                config, ["namelist:linear", "transport_efficiency"], ".true.."
+                config, ["namelist:linear", "transport_efficiency"], ".true."
             )
         else:
             self.add_setting(

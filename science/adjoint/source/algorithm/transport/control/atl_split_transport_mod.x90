@@ -99,7 +99,7 @@ contains
     if ( .not. transport_efficiency ) then
 
       ! When we have multiple split steps, we need an intermediate field for the
-      ! field at the start of each substeps
+      ! field at the start of each substep
       ! field_ptr points to the field at the start of each split step
       call invoke( setval_X(ls_field_np1(1), ls_field_n) )
 

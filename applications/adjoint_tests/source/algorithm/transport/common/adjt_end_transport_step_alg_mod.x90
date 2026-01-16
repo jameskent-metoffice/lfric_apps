@@ -113,6 +113,7 @@ module adjt_end_transport_step_alg_mod
     vector_space_w2v_ptr => function_space_collection%get_fs( &
         mesh, element_order_h, element_order_v, W2V)
 
+    ! Assume that the last split step is in W2V (for VHV splitting)
     call sum_flux%initialise( vector_space = vector_space_w2_ptr )
     call flux_last_step%initialise( vector_space = vector_space_w2v_ptr )
 

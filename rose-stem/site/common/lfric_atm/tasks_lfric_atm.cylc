@@ -215,7 +215,20 @@
         "mpi_parts_xios" : 64,
         "log_level": "info",
         "plot_str": "plot_map.py $NODAL_DATA_DIR/lfric_diagnostics.nc  $PLOT_DIR",
-        "memory_plot_ex": true,
+    }) %}
+
+{% elif task_ns.conf_name == "nwp_gal9_timestep-C224_MG" %}
+
+    {% do task_dict.update({
+        "opt_confs": ["um_dump","june_case","large_timestep"],
+        "resolution": "C224_MG",
+        "DT": 3600,
+        "tsteps": 24,
+        "mpi_parts": 588,
+        "xios_nodes": 1,
+        "mpi_parts_xios" : 64,
+        "log_level": "info",
+        "plot_str": "plot_map.py $NODAL_DATA_DIR/lfric_diagnostics.nc  $PLOT_DIR",
     }) %}
 
 {% elif task_ns.conf_name == "nwp_gal9_oper-C224_MG" %}

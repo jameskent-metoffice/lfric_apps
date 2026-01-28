@@ -73,7 +73,7 @@ function hadley_lipschitz(lat,height) result(u)
   real(kind=r_def)             :: w0, k, top_of_atmosphere, l, z, sh
 
   k = 5.0_r_def
-  w0 = 0.12_r_def / k
+  w0 = 0.05_r_def / k
   top_of_atmosphere = 12000.0_r_def
   l = pi/top_of_atmosphere
   z = height-scaled_radius

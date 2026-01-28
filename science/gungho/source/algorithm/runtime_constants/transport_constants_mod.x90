@@ -66,7 +66,8 @@ module transport_constants_mod
   ! enough points for a centred interpolation. The deeper the halo
   ! is the larger the stencil needs to be. A depth 6 stencil is
   ! generally enough for cubic interpolation in a depth 4 halo
-  integer(kind=i_def), public, parameter :: ext_mesh_stencil_depth = 6
+  !integer(kind=i_def), public, parameter :: ext_mesh_stencil_depth = 6
+  integer(kind=i_def), public, parameter :: ext_mesh_stencil_depth = 16
 
   ! ========================================================================== !
   ! Inventories for use in the rest of the model

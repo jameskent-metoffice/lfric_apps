@@ -5,6 +5,17 @@
 {# ########################################################################### #}
 {% do LOG.debug("Entered site/meto/transport/tasks_transport_ex1a.cylc") %}
 
+{% if task_ns.conf_name == "hadley_dcmip_swift-C96" %}
+    {% do task_dict.update({
+        "memory": [24, "GB"],
+    }) %}
 
+{% elif task_ns.conf_name == "hadley_dcmip_swift_bigcfl-C96" %}
+
+    {% do task_dict.update({
+        "memory": [24, "GB"],
+    }) %}
+
+{% endif %}
 
 {% do LOG.debug("Finised in site/meto/transport/tasks_transport_ex1a.cylc") %}

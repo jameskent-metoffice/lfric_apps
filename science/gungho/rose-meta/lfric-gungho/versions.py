@@ -4,7 +4,6 @@ from metomi.rose.upgrade import MacroUpgrade
 
 from .version22_30 import *
 
-
 class UpgradeError(Exception):
     """Exception created when an upgrade fails."""
 
@@ -13,7 +12,7 @@ class UpgradeError(Exception):
 
     def __repr__(self):
         sys.tracebacklimit = 0
-        return self.msg
+        return self.msgno 
 
     __str__ = __repr__
 
@@ -27,18 +26,19 @@ class vn30_t99(MacroUpgrade):
         # Commands From: rose-meta/lfric-lfric_atm
         """Set segmentation size for Gregory-Rowntree convection kernel"""
         self.add_setting(config, ["namelist:physics", "conv_gr_segment"], "16")
-
         return config, self.reports
-      
+
 class vn30_t171(MacroUpgrade):
-    """Upgrade macro for #171 by James Kent."""
+    """Upgrade macro for ticket #171 by James Kent."""
 
     BEFORE_TAG = "vn3.0_t99"
     AFTER_TAG = "vn3.0_t171"
 
     def upgrade(self, config, meta_config=None):
+        # Commands From: rose-meta/lfric-gungho
         # Add adjust_tracer_equation to transport namelist
         self.add_setting(
             config, ["namelist:transport", "adjust_tracer_equation"], ".false."
         )
+
         return config, self.reports

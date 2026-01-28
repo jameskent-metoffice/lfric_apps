@@ -17,8 +17,6 @@ class UpgradeError(Exception):
 
     __str__ = __repr__
 
-class vn30_t171(MacroUpgrade):
-
 class vn30_t99(MacroUpgrade):
     """Upgrade macro for ticket #99 by Fred Wobus."""
 

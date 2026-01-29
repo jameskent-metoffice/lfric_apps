@@ -18,3 +18,4 @@
 | EdHone          | Ed Hone            | Met Office                       | 2026-01-26 |
 | alanjhewitt     | Alan J Hewitt      | Met Office                       | 2026-01-28 |
 | mo-lottieturner | Lottie Turner      | Met Office                       | 2026-01-27 |
+| andrewcoughtrie | Andrew Coughtrie   | Met Office                       | 2026-01-28 |

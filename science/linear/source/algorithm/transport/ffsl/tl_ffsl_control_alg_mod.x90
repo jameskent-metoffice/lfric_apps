@@ -332,7 +332,7 @@ module tl_ffsl_control_alg_mod
     ! End of transport step generic routines
 
     ! Compute pert wnid ls field update and combine for perturbation field np1
-    if ( compute_adv_field == .true. ) then
+    if ( compute_adv_field ) then
       call invoke( X_minus_Y(pert_u_ls_field_update,                           &
                              ls_field_new_with_pert, ls_field),                &
                    X_plus_Y(field_np1, field_with_ls_wind,                     &

@@ -128,6 +128,9 @@ contains
     if ( reversibility ) then
       sl_order = vertical_sl_order_cubic_hermite
     end if
+    if ( transport_controller%get_linear_scheme() ) then
+      sl_order = vertical_sl_order_linear
+    end if
 
     ! Compute SL advective transport (vertical only) of
     ! field_np1 =  field_n_D

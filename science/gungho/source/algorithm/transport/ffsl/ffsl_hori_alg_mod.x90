@@ -349,7 +349,8 @@ contains
     call monotone_option_special_edges(special_edges_monotone, monotone)
     splitting = transport_metadata%get_splitting()
 
-    if (transport_controller%get_cheap_update_step()) then
+    if (transport_controller%get_cheap_update_step() .or.                      &
+        transport_controller%get_linear_scheme() ) then
       order = 0
     else
       order = ffsl_inner_order
@@ -607,7 +608,8 @@ contains
     splitting = transport_metadata%get_splitting()
     enforce_minvalue = transport_metadata%get_enforce_min_value()
 
-    if (transport_controller%get_cheap_update_step()) then
+    if (transport_controller%get_cheap_update_step() .or.                      &
+        transport_controller%get_linear_scheme()) then
       order = 0
     else
       order = order_arg
@@ -959,7 +961,8 @@ contains
     enforce_minvalue = transport_metadata%get_enforce_min_value()
     outer = swift_splitting
 
-    if (transport_controller%get_cheap_update_step()) then
+    if (transport_controller%get_cheap_update_step() .or.                      &
+        transport_controller%get_linear_scheme()) then
       order = 0
     else
       order = order_arg

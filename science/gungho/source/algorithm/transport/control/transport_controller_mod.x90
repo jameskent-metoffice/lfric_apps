@@ -77,6 +77,7 @@ module transport_controller_mod
     integer(kind=i_def) :: num_substeps = 1
     logical(kind=l_def) :: outer_set = .false.
     integer(kind=i_def) :: outer
+    logical(kind=l_def) :: linear_scheme = .false.
     logical(kind=l_def) :: cheap_update_step = .false.
     logical(kind=l_def) :: adaptive_splitting = .false.
     integer(kind=i_def) :: reference_splitting = IMDI
@@ -101,7 +102,9 @@ module transport_controller_mod
     procedure, public  :: initialise
     procedure, public  :: before_transport_field
     procedure, public  :: after_transport_field
+    procedure, public  :: set_linear_scheme
     procedure, public  :: get_cheap_update_step
+    procedure, public  :: get_linear_scheme
     procedure, public  :: get_num_substeps
     procedure, public  :: get_ref_field
     procedure, public  :: get_wind_npdt
@@ -730,6 +733,20 @@ contains
 
   end subroutine after_transport_field
 
+  !> @brief Updates the pointer to determine if the transport scheme
+  !!        needs to be linear in the advecting wind
+  !> @param[in] option  True or false
+  subroutine set_linear_scheme(self, option)
+
+    implicit none
+
+    class(transport_controller_type), target, intent(inout) :: self
+    logical(kind=l_def),                      intent(in)    :: option
+
+    self%linear_scheme = option
+
+  end subroutine set_linear_scheme
+
 ! ============================================================================ !
 ! GETTERS
 ! ============================================================================ !
@@ -746,6 +763,20 @@ contains
     cheap_update_step = self%cheap_update_step
 
   end function get_cheap_update_step
+
+  !> @brief Returns whether this needs to be a linear transport scheme
+  !> @return Logical flag indicating whether this transport scheme
+  !!         needs to be linear in the advecting wind
+  function get_linear_scheme(self) result(linear_scheme)
+
+    implicit none
+
+    class(transport_controller_type), intent(in) :: self
+    logical(kind=l_def) :: linear_scheme
+
+    linear_scheme = self%linear_scheme
+
+  end function get_linear_scheme
 
   !> @brief Returns a pointer to the counter object
   !> @return The transport step counter

@@ -259,6 +259,7 @@ contains
     integer(kind=i_def) :: equation_form
     integer(kind=i_def) :: splitting
     logical(kind=l_def) :: first_order_cheap_update
+    logical(kind=l_def) :: linear_scheme
 
     ! Internal fields
     type(r_tran_field_type) :: dz_w3
@@ -288,6 +289,7 @@ contains
     equation_form = transport_metadata%get_equation_form()
     splitting = transport_metadata%get_splitting()
     first_order_cheap_update = transport_controller%get_cheap_update_step()
+    linear_scheme = transport_controller%get_linear_scheme()
 
     ! The minimum value is required for the quasi-monotone limiter, if
     ! it is not set we assume positivity.
@@ -298,7 +300,7 @@ contains
       min_val = 0.0_r_tran
     end if
 
-    if (first_order_cheap_update) then
+    if (first_order_cheap_update .or. linear_scheme) then
       ! Use first order transport
       vertical_order = 0_i_def
     else

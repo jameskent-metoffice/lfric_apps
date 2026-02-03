@@ -84,14 +84,14 @@ contains
     ! ====================================================================== !
 
     ! Use constant reconstruction to ensure linearity in u'
-    call pert_transport_controller%set_linear_scheme(.true.)
+    !call pert_transport_controller%set_linear_scheme(.true.)
 
     ! Do the vertical transport
     call vertical_sl_advective_alg( ls_field_np1, ls_field,                    &
                                     pert_transport_controller )
 
     ! Reset reconstruction order
-    call pert_transport_controller%set_linear_scheme(.false.)
+    !call pert_transport_controller%set_linear_scheme(.false.)
 
     ! Combine them to update the perturbation field
     call invoke( X_minus_Y(ls_field_inc, ls_field_np1, ls_field),              &

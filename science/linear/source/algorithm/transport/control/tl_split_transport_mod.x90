@@ -191,9 +191,11 @@ contains
   !!                                   transport counter and precomputations
   subroutine tl_split_transport_field(field_np1, field_n, ls_field_n, tl_transport_controller)
 
-    use tl_mol_conservative_alg_mod,      only: tl_mol_conservative_alg
-    use tl_mol_advective_alg_mod,         only: tl_mol_advective_alg
-    use tl_ffsl_control_alg_mod,          only: tl_ffsl_control_alg
+    use tl_mol_conservative_alg_mod,        only: tl_mol_conservative_alg
+    use tl_mol_advective_alg_mod,           only: tl_mol_advective_alg
+    use tl_ffsl_control_alg_mod,            only: tl_ffsl_control_alg
+    use tl_vertical_sl_advective_alg_mod,   only: tl_vertical_sl_advective_alg
+    use tl_horizontal_sl_advective_alg_mod, only: tl_horizontal_sl_advective_alg
 
     implicit none
 
@@ -295,9 +297,8 @@ contains
                   LOG_LEVEL_ERROR                                              &
           )
         end if
-        call log_event(                                                        &
-                'TL: Horizontal SL not coded yet',                             &
-                LOG_LEVEL_ERROR                                                &
+        call tl_horizontal_sl_advective_alg(                                   &
+                field_np1, field_n, ls_field_n, tl_transport_controller        &
         )
 
       case ( direction_v )
@@ -310,10 +311,9 @@ contains
                 LOG_LEVEL_ERROR                                                &
         )
         case ( equation_form_advective )
-              call log_event(                                                  &
-                'TL: Vertical SL advective not coded yet',                     &
-                LOG_LEVEL_ERROR                                                &
-        )
+          call tl_vertical_sl_advective_alg(                                   &
+                  field_np1, field_n, ls_field_n, tl_transport_controller      &
+          )
         case default
           call log_event(                                                      &
                   'Trying to solve unrecognised form of transport equation',   &

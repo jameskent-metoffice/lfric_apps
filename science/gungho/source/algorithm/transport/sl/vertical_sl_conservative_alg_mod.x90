@@ -117,6 +117,7 @@ contains
     logical(kind=l_def)                      :: reversibility
     logical(kind=l_def)                      :: enforce_min_value
     logical(kind=l_def)                      :: final_split_step
+    logical(kind=l_def)                      :: linear_scheme
 
     if ( subroutine_timers ) call timer( 'transport.slice_vertical' )
 
@@ -221,6 +222,7 @@ contains
                                                       log_space ) )
       else
         ! Cubic (Lagrange or Hermite) semi-Lagrangian transport
+        linear_scheme = .false.
         call invoke( vertical_cubic_sl_kernel_type( field_np1,                 &
                                                     interp_coeffs(1),          &
                                                     interp_coeffs(2),          &
@@ -232,6 +234,7 @@ contains
                                                     interp_indices(4),         &
                                                     linear_coeffs(1),          &
                                                     linear_coeffs(2),          &
+                                                    linear_scheme,             &
                                                     monotone,                  &
                                                     monotone_order,            &
                                                     log_space ) )

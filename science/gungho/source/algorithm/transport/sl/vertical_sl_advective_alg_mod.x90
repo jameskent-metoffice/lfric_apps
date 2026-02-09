@@ -84,6 +84,7 @@ contains
     integer(kind=i_def)                      :: splitting
     logical(kind=l_def)                      :: reversibility
     logical(kind=l_def)                      :: log_space
+    logical(kind=l_def)                      :: linear_scheme
 
     ! Interpolation coefficients
     type(r_tran_field_type),  pointer :: linear_coeffs(:)
@@ -92,7 +93,8 @@ contains
 
     if ( subroutine_timers ) call timer( 'transport.sl_vertical' )
 
-    if ( vertical_sl_order /= vertical_sl_order_cubic           .and. &
+    if ( vertical_sl_order /= vertical_sl_order_linear          .and. &
+         vertical_sl_order /= vertical_sl_order_cubic           .and. &
          vertical_sl_order /= vertical_sl_order_cubic_hermite   .and. &
          vertical_sl_order /= vertical_sl_order_quintic               ) then
       call log_event( "vertical_sl_advective: Invalid vertical_sl_order", LOG_LEVEL_ERROR )
@@ -128,8 +130,13 @@ contains
     if ( reversibility ) then
       sl_order = vertical_sl_order_cubic_hermite
     end if
-    if ( transport_controller%get_linear_scheme() ) then
-      sl_order = vertical_sl_order_linear
+
+    linear_scheme = .false.
+    if (vertical_sl_order == vertical_sl_order_linear) then
+      ! Linear interpolation included in cubic kernel, hence we
+      ! need to get cubic indices
+      linear_scheme = .true.
+      sl_order = vertical_sl_order_cubic
     end if
 
     ! Compute SL advective transport (vertical only) of
@@ -180,6 +187,7 @@ contains
                                                   interp_indices(4),           &
                                                   linear_coeffs(1),            &
                                                   linear_coeffs(2),            &
+                                                  linear_scheme,               &
                                                   monotone,                    &
                                                   monotone_order,              &
                                                   log_space ) )

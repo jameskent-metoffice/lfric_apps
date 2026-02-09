@@ -30,8 +30,8 @@ module tl_ffsl_control_alg_mod
   use tl_end_of_transport_step_alg_mod,  only: tl_end_of_advective_step_alg
   use sci_inject_sh_w3_to_wt_kernel_mod, only: inject_sh_w3_to_wt_kernel_type
   use sci_inject_wt_to_sh_w3_kernel_mod, only: inject_wt_to_sh_w3_kernel_type
-  use ffsl_hori_alg_mod,                 only: ffsl_hori_splitting_alg
-  use ffsl_vert_alg_mod,                 only: ffsl_vert_transport_alg
+  use tl_ffsl_hori_alg_mod,              only: tl_ffsl_hori_splitting_alg
+  use tl_ffsl_vert_alg_mod,              only: tl_ffsl_vert_transport_alg
 
   ! Transport Controller
   use split_transport_utils_mod,         only: get_num_split_steps,     &
@@ -106,9 +106,7 @@ module tl_ffsl_control_alg_mod
     type(field_type),         target  :: ls_field_w3_shifted
     type(field_type),         target  :: ls_field_new_with_pert_w3_shifted
 
-    type(field_type)            :: ls_increment
     type(field_type)            :: mass_flux_pert
-    type(field_type)            :: increment_pert
     type(field_type)            :: mass_flux_pert_ls
 
     ! Transport controller and metadata
@@ -221,16 +219,16 @@ module tl_ffsl_control_alg_mod
     select case (direction)
     case (direction_v)
       vertical_order = transport_metadata%get_ffsl_vertical_order()
-      call ffsl_vert_transport_alg(                                            &
-              mass_flux_pert, increment_pert, field_np1_ptr, field_ptr,        &
+      call tl_ffsl_vert_transport_alg(                                         &
+              mass_flux_pert, field_np1_ptr, field_ptr,                        &
               step_dt, ls_transport_controller, vertical_order,                &
-              compute_adv_inc=.false., compute_field_np1=compute_adv_field     &
+              compute_field_np1=compute_adv_field                              &
       )
 
     case (direction_h)
-      call ffsl_hori_splitting_alg(                                            &
+      call tl_ffsl_hori_splitting_alg(                                         &
               mass_flux_pert, field_np1_ptr, field_ptr, step_dt,               &
-              ls_transport_controller,                                         &
+              ls_transport_controller, linear_scheme=.false.,                  &
               compute_field_np1=compute_adv_field                              &
       )
 
@@ -256,34 +254,26 @@ module tl_ffsl_control_alg_mod
     ! perturbation wind ls state u'.grad(ls_f)
     ! ====================================================================== !
 
-    ! Use constant reconstruction to ensure linearity in u'
-    call pert_transport_controller%set_linear_scheme(.true.)
-
     select case (direction)
     case (direction_v)
       vertical_order = 0
-      call ffsl_vert_transport_alg(                                            &
-              mass_flux_pert_ls, ls_increment,                                 &
-              ls_field_new_with_pert_ptr, ls_field_ptr,                        &
+      call tl_ffsl_vert_transport_alg(                                         &
+              mass_flux_pert_ls, ls_field_new_with_pert_ptr, ls_field_ptr,     &
               step_dt, pert_transport_controller, vertical_order,              &
-              compute_adv_inc=.false., compute_field_np1=compute_adv_field     &
+              compute_field_np1=compute_adv_field                              &
       )
 
     case (direction_h)
-      call ffsl_hori_splitting_alg(                                            &
+      call tl_ffsl_hori_splitting_alg(                                         &
               mass_flux_pert_ls, ls_field_new_with_pert_ptr,                   &
-              ls_field_ptr, step_dt,                                           &
-              pert_transport_controller,                                       &
-              compute_field_np1=compute_adv_field                              &
+              ls_field_ptr, step_dt, pert_transport_controller,                &
+              linear_scheme=.true., compute_field_np1=compute_adv_field        &
       )
 
     case default
       call log_event( "TL FFSL control: Unrecognized ls field direction", LOG_LEVEL_ERROR )
 
     end select
-
-    ! Reset reconstruction order
-    call pert_transport_controller%set_linear_scheme(.false.)
 
     ! Convert field_np1 back to Wtheta, if required
     if (function_space == Wtheta .and. compute_adv_field) then

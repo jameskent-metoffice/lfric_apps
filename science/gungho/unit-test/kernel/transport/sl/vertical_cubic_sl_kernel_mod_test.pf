@@ -45,7 +45,7 @@ contains
     integer(i_def), dimension(undf_wc)  :: cubic_index_1, cubic_index_2, &
                                            cubic_index_3, cubic_index_4
     real(r_tran),   dimension(undf_wc)  :: linear_coeff_1, linear_coeff_2
-    logical(l_def)  :: log_space
+    logical(l_def)  :: log_space, linear_scheme
     integer(i_def)  :: monotone, monotone_order, i
     real(r_tran)    :: a1, a2, a3
 
@@ -72,6 +72,7 @@ contains
     field(:) = field_in(:)
     field_out(:) = field_in(:)
     log_space = .false.
+    linear_scheme = .false.
     monotone = monotone_none
     monotone_order = vertical_monotone_order_high
 
@@ -82,6 +83,7 @@ contains
                                  cubic_index_1, cubic_index_2,   &
                                  cubic_index_3, cubic_index_4,   &
                                  linear_coeff_1, linear_coeff_2, &
+                                 linear_scheme,                  &
                                  monotone,                       &
                                  monotone_order,                 &
                                  log_space,                      &
@@ -114,6 +116,7 @@ contains
                                  cubic_index_1, cubic_index_2,   &
                                  cubic_index_3, cubic_index_4,   &
                                  linear_coeff_1, linear_coeff_2, &
+                                 linear_scheme,                  &
                                  monotone,                       &
                                  monotone_order,                 &
                                  log_space,                      &
@@ -151,6 +154,7 @@ contains
                                  cubic_index_1, cubic_index_2,   &
                                  cubic_index_3, cubic_index_4,   &
                                  linear_coeff_1, linear_coeff_2, &
+                                 linear_scheme,                  &
                                  monotone,                       &
                                  monotone_order,                 &
                                  log_space,                      &

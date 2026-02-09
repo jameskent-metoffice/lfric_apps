@@ -37,7 +37,7 @@ module vertical_cubic_sl_kernel_mod
   !>                                      by the PSy layer.
   type, public, extends(kernel_type) :: vertical_cubic_sl_kernel_type
     private
-    type(arg_type) :: meta_args(14) = (/                                            &
+    type(arg_type) :: meta_args(15) = (/                                           &
          arg_type(GH_FIELD,  GH_REAL,    GH_READWRITE, ANY_DISCONTINUOUS_SPACE_1), & ! field
          arg_type(GH_FIELD,  GH_REAL,    GH_READ,      ANY_DISCONTINUOUS_SPACE_2), & ! cubic_coef
          arg_type(GH_FIELD,  GH_REAL,    GH_READ,      ANY_DISCONTINUOUS_SPACE_2), & ! cubic_coef
@@ -49,6 +49,7 @@ module vertical_cubic_sl_kernel_mod
          arg_type(GH_FIELD,  GH_INTEGER, GH_READ,      ANY_DISCONTINUOUS_SPACE_2), & ! cubic_indices
          arg_type(GH_FIELD,  GH_REAL,    GH_READ,      ANY_DISCONTINUOUS_SPACE_2), & ! linear_coef
          arg_type(GH_FIELD,  GH_REAL,    GH_READ,      ANY_DISCONTINUOUS_SPACE_2), & ! linear_coef
+         arg_type(GH_SCALAR, GH_LOGICAL, GH_READ),                                 & ! linear scheme
          arg_type(GH_SCALAR, GH_INTEGER, GH_READ),                                 & ! monotone scheme
          arg_type(GH_SCALAR, GH_INTEGER, GH_READ),                                 & ! monotone order
          arg_type(GH_SCALAR, GH_LOGICAL, GH_READ)                                  & ! log_space
@@ -100,6 +101,7 @@ module vertical_cubic_sl_kernel_mod
                                      cubic_indices_4,         &
                                      linear_coef_1,           &
                                      linear_coef_2,           &
+                                     linear_scheme,           &
                                      vertical_monotone,       &
                                      vertical_monotone_order, &
                                      log_space,               &
@@ -127,6 +129,7 @@ module vertical_cubic_sl_kernel_mod
     integer(kind=i_def), intent(in)    :: cubic_indices_4(undf_wc)
     real(kind=r_tran),   intent(in)    :: linear_coef_1(undf_wc)
     real(kind=r_tran),   intent(in)    :: linear_coef_2(undf_wc)
+    logical(kind=l_def), intent(in)    :: linear_scheme
     integer(kind=i_def), intent(in)    :: vertical_monotone
     integer(kind=i_def), intent(in)    :: vertical_monotone_order
     logical(kind=l_def), intent(in)    :: log_space
@@ -153,39 +156,47 @@ module vertical_cubic_sl_kernel_mod
       field_local(k,4) = field(wf_idx + cubic_indices_4(wc_idx+k-1) - 1)
     end do
 
-    if (log_space) then
-      allocate(log_field_local(nl,4))
-      log_field_local(:,:) = LOG(MAX(ABS(field_local(:,:)), EPS_R_TRAN))
-
-      ! Do interpolation on log(field) using cubic coefficients and indices
-      field_dep(:) = EXP(                                                      &
-          cubic_coef_1(wc_idx : wc_idx+nl-1)*log_field_local(:,1)              &
-          + cubic_coef_2(wc_idx : wc_idx+nl-1)*log_field_local(:,2)            &
-          + cubic_coef_3(wc_idx : wc_idx+nl-1)*log_field_local(:,3)            &
-          + cubic_coef_4(wc_idx : wc_idx+nl-1)*log_field_local(:,4)            &
-      )
-
-      deallocate(log_field_local)
-
+    if (linear_scheme) then
+      ! Linear interpolation
+      field_dep(:) = linear_coef_1(wc_idx : wc_idx+nl-1)*field_local(:,2)      &
+                   + linear_coef_2(wc_idx : wc_idx+nl-1)*field_local(:,3)
     else
-      ! Interpolate field as is
-      field_dep(:) = (                                                         &
-          cubic_coef_1(wc_idx : wc_idx+nl-1)*field_local(:,1)                  &
-          + cubic_coef_2(wc_idx : wc_idx+nl-1)*field_local(:,2)                &
-          + cubic_coef_3(wc_idx : wc_idx+nl-1)*field_local(:,3)                &
-          + cubic_coef_4(wc_idx : wc_idx+nl-1)*field_local(:,4)                &
-      )
-    end if
+      ! Cubic interpolation
+      if (log_space) then
+        allocate(log_field_local(nl,4))
+        log_field_local(:,:) = LOG(MAX(ABS(field_local(:,:)), EPS_R_TRAN))
 
-    ! Enforce monotonicity if required
-    if ( vertical_monotone /= monotone_none ) then
-      ! Apply monotonicity
-      call monotone_cubic_sl(                                                  &
-              field_dep, field_local,                                          &
-              linear_coef_1(wc_idx : wc_idx+nl-1),                             &
-              linear_coef_2(wc_idx : wc_idx+nl-1),                             &
-              vertical_monotone, vertical_monotone_order, nl                   &
-      )
+        ! Do interpolation on log(field) using cubic coefficients and indices
+        field_dep(:) = EXP(                                                    &
+            cubic_coef_1(wc_idx : wc_idx+nl-1)*log_field_local(:,1)            &
+            + cubic_coef_2(wc_idx : wc_idx+nl-1)*log_field_local(:,2)          &
+            + cubic_coef_3(wc_idx : wc_idx+nl-1)*log_field_local(:,3)          &
+            + cubic_coef_4(wc_idx : wc_idx+nl-1)*log_field_local(:,4)          &
+        )
+
+        deallocate(log_field_local)
+
+      else
+        ! Interpolate field as is
+        field_dep(:) = (                                                       &
+            cubic_coef_1(wc_idx : wc_idx+nl-1)*field_local(:,1)                &
+            + cubic_coef_2(wc_idx : wc_idx+nl-1)*field_local(:,2)              &
+            + cubic_coef_3(wc_idx : wc_idx+nl-1)*field_local(:,3)              &
+            + cubic_coef_4(wc_idx : wc_idx+nl-1)*field_local(:,4)              &
+        )
+      end if
+
+      ! Enforce monotonicity if required
+      if ( vertical_monotone /= monotone_none ) then
+        ! Apply monotonicity
+        call monotone_cubic_sl(                                                &
+                field_dep, field_local,                                        &
+                linear_coef_1(wc_idx : wc_idx+nl-1),                           &
+                linear_coef_2(wc_idx : wc_idx+nl-1),                           &
+                vertical_monotone, vertical_monotone_order, nl                 &
+        )
+      end if
+
     end if
 
     ! Put answer back from local array into global field

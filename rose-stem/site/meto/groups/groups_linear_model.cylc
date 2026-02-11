@@ -44,6 +44,22 @@
         "linear_model_dcmip301-C24_ex1a_gnu_fast-debug-64bit",
         "linear_model_ex1a_canned",
     ],
+    "linear_model_ex1a_ffsl": [
+        "linear_model_nwp_gal9-C12_MG_ex1a_gnu_fast-debug-64bit",
+        "linear_model_nwp_gal9_ffsl-C12_MG_ex1a_gnu_fast-debug-64bit",
+        "linear_model_nwp_gal9_sl-C12_MG_ex1a_gnu_fast-debug-64bit",
+        "linear_model_nwp_gal9-C224_MG_ex1a_gnu_fast-debug-64bit",
+        "linear_model_nwp_gal9_threedmol_noteff-C224_MG_ex1a_gnu_fast-debug-64bit",
+        "linear_model_nwp_gal9_threedmol-C224_MG_ex1a_gnu_fast-debug-64bit",
+        "linear_model_nwp_gal9_ffsl-C224_MG_ex1a_gnu_fast-debug-64bit",
+        "linear_model_nwp_gal9_sl-C224_MG_ex1a_gnu_fast-debug-64bit",
+    ],
+    "linear_model_ex1a_ffsl224": [
+        "linear_model_nwp_gal9-C224_MG_ex1a_gnu_fast-debug-64bit",
+        "linear_model_nwp_gal9_threedmol-C224_MG_ex1a_gnu_fast-debug-64bit",
+        "linear_model_nwp_gal9_ffsl-C224_MG_ex1a_gnu_fast-debug-64bit",
+        "linear_model_nwp_gal9_sl-C224_MG_ex1a_gnu_fast-debug-64bit",
+    ],
     "linear_model_ex1a": [
         "linear_model_ex1a_developer",
     ],

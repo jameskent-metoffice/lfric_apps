@@ -30,8 +30,10 @@ module tl_ffsl_control_alg_mod
   use tl_end_of_transport_step_alg_mod,  only: tl_end_of_advective_step_alg
   use sci_inject_sh_w3_to_wt_kernel_mod, only: inject_sh_w3_to_wt_kernel_type
   use sci_inject_wt_to_sh_w3_kernel_mod, only: inject_wt_to_sh_w3_kernel_type
-  use tl_ffsl_hori_alg_mod,              only: tl_ffsl_hori_splitting_alg
-  use tl_ffsl_vert_alg_mod,              only: tl_ffsl_vert_transport_alg
+  use tl_ffsl_hori_alg_mod,              only: tl_ffsl_hori_splitting_alg, &
+                                               tl_ffsl_full_hori_splitting_alg
+  use tl_ffsl_vert_alg_mod,              only: tl_ffsl_vert_transport_alg, &
+                                               tl_ffsl_full_vert_transport_alg
 
   ! Transport Controller
   use split_transport_utils_mod,         only: get_num_split_steps,     &
@@ -113,13 +115,17 @@ module tl_ffsl_control_alg_mod
     type(transport_metadata_type),   pointer :: transport_metadata
     type(transport_counter_type),    pointer :: transport_counter
     type(transport_controller_type), pointer :: ls_transport_controller
+    type(transport_controller_type), pointer :: mean_transport_controller
     type(transport_controller_type), pointer :: pert_transport_controller
-    type(wind_precomputations_type), pointer :: ls_wind_precomputations
-    type(wind_precomputations_type), pointer :: pert_wind_precomputations
     type(flux_precomputations_type), pointer :: ls_wind_flux_precomp
     type(flux_precomputations_type), pointer :: pert_wind_flux_precomp
 
+    logical(kind=l_def) :: use_full_wind
+
     if ( subroutine_timers ) call timer('tl_ffsl_control_alg')
+
+    ! We should test this
+    use_full_wind=.true.
 
     ! ------------------------------------------------------------------------ !
     ! Extract transport objects and initialise temporary fields
@@ -131,11 +137,10 @@ module tl_ffsl_control_alg_mod
 
     ! Transport controller
     ls_transport_controller   => tl_transport_controller%get_ls_wind_pert_rho_controller()
+    mean_transport_controller => tl_transport_controller%get_ls_wind_ls_rho_controller()
     pert_transport_controller => tl_transport_controller%get_pert_wind_ls_rho_controller()
     ls_wind_flux_precomp      => ls_transport_controller%get_flux_precomputations()
     pert_wind_flux_precomp    => pert_transport_controller%get_flux_precomputations()
-    ls_wind_precomputations   => ls_transport_controller%get_wind_precomputations()
-    pert_wind_precomputations => pert_transport_controller%get_wind_precomputations()
 
     ! Metadata
     transport_metadata => pert_transport_controller%get_transport_metadata()
@@ -218,7 +223,8 @@ module tl_ffsl_control_alg_mod
 
     select case (direction)
     case (direction_v)
-      vertical_order = transport_metadata%get_ffsl_vertical_order()
+      !vertical_order = transport_metadata%get_ffsl_vertical_order()
+      vertical_order = 0
       call tl_ffsl_vert_transport_alg(                                         &
               mass_flux_pert, field_np1_ptr, field_ptr,                        &
               step_dt, ls_transport_controller, vertical_order,                &
@@ -240,52 +246,82 @@ module tl_ffsl_control_alg_mod
     ! Convert field_np1 back to Wtheta, if required
     if (function_space == Wtheta .and. compute_adv_field) then
       ! If Wtheta variable, move field_np1 back to Wtheta
-      if (enforce_min_value) then
+      !if (enforce_min_value) then
         ! Can't generate negatives by extrapolation, so just inject
         call invoke( setval_X(field_with_ls_wind, field_np1_w3_shifted) )
-      else
-        ! Extrapolation allowed
-        call invoke( inject_sh_w3_to_wt_kernel_type(field_with_ls_wind,        &
-                                                    field_np1_w3_shifted) )
-      end if
+      !else
+      !  ! Extrapolation allowed
+      !  call invoke( inject_sh_w3_to_wt_kernel_type(field_with_ls_wind,        &
+      !                                              field_np1_w3_shifted) )
+      !end if
     end if
 
     ! ====================================================================== !
     ! perturbation wind ls state u'.grad(ls_f)
     ! ====================================================================== !
 
-    select case (direction)
-    case (direction_v)
-      vertical_order = 0
-      call tl_ffsl_vert_transport_alg(                                         &
-              mass_flux_pert_ls, ls_field_new_with_pert_ptr, ls_field_ptr,     &
-              step_dt, pert_transport_controller, vertical_order,              &
-              compute_field_np1=compute_adv_field                              &
-      )
+    if ( use_full_wind ) then
+      select case (direction)
+      case (direction_v)
+        vertical_order = 0
+        call tl_ffsl_full_vert_transport_alg(                                  &
+                mass_flux_pert_ls, ls_field_new_with_pert_ptr,                 &
+                ls_field_ptr, step_dt, pert_transport_controller,              &
+                mean_transport_controller, vertical_order,                     &
+                compute_field_np1=compute_adv_field                            &
+        )
 
-    case (direction_h)
-      call tl_ffsl_hori_splitting_alg(                                         &
-              mass_flux_pert_ls, ls_field_new_with_pert_ptr,                   &
-              ls_field_ptr, step_dt, pert_transport_controller,                &
-              linear_scheme=.true., compute_field_np1=compute_adv_field        &
-      )
+      case (direction_h)
+        call tl_ffsl_full_hori_splitting_alg(                                  &
+                                         mass_flux_pert_ls,                    &
+                                         ls_field_new_with_pert_ptr,           &
+                                         ls_field_ptr, step_dt,                &
+                                         pert_transport_controller,            &
+                                         mean_transport_controller,            &
+                                         linear_scheme=.true.,                 &
+                                         compute_field_np1=compute_adv_field   &
+        )
 
-    case default
-      call log_event( "TL FFSL control: Unrecognized ls field direction", LOG_LEVEL_ERROR )
+      case default
+        call log_event( "TL FFSL control: Unrecognized ls field direction", LOG_LEVEL_ERROR )
 
-    end select
+      end select
+
+    else
+      select case (direction)
+      case (direction_v)
+        vertical_order = 0
+        call tl_ffsl_vert_transport_alg(                                       &
+                mass_flux_pert_ls, ls_field_new_with_pert_ptr, ls_field_ptr,   &
+                step_dt, pert_transport_controller, vertical_order,            &
+                compute_field_np1=compute_adv_field                            &
+        )
+
+      case (direction_h)
+        call tl_ffsl_hori_splitting_alg(                                       &
+                mass_flux_pert_ls, ls_field_new_with_pert_ptr,                 &
+                ls_field_ptr, step_dt, pert_transport_controller,              &
+                linear_scheme=.true., compute_field_np1=compute_adv_field      &
+        )
+
+      case default
+        call log_event( "TL FFSL control: Unrecognized ls field direction", LOG_LEVEL_ERROR )
+
+      end select
+
+    end if
 
     ! Convert field_np1 back to Wtheta, if required
     if (function_space == Wtheta .and. compute_adv_field) then
       ! If Wtheta variable, move field_np1 back to Wtheta
-      if (enforce_min_value) then
-        ! Can't generate negatives by extrapolation, so just inject
+      !if (enforce_min_value) then
+      !  ! Can't generate negatives by extrapolation, so just inject
         call invoke( setval_X(ls_field_new_with_pert, ls_field_new_with_pert_w3_shifted) )
-      else
-        ! Extrapolation allowed
-        call invoke( inject_sh_w3_to_wt_kernel_type(ls_field_new_with_pert,  &
-                                                    ls_field_new_with_pert_w3_shifted) )
-      end if
+      !else
+      !  ! Extrapolation allowed
+      !  call invoke( inject_sh_w3_to_wt_kernel_type(ls_field_new_with_pert,  &
+      !                                              ls_field_new_with_pert_w3_shifted) )
+      !end if
     end if
 
     ! End of transport step generic routines

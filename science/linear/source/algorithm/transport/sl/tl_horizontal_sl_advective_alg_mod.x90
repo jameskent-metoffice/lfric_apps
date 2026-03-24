@@ -27,6 +27,10 @@ module tl_horizontal_sl_advective_alg_mod
 
   ! Algorithms and Kernels
   use end_of_transport_step_alg_mod,     only: end_of_advective_step_alg
+  use horizontal_linear_outer_sl_kernel_mod, &
+                                         only: horizontal_linear_outer_sl_kernel_type
+  use horizontal_linear_outer_sl_sphere_kernel_mod,                            &
+                                         only: horizontal_linear_outer_sl_sphere_kernel_type
   use horizontal_cubic_sl_kernel_mod,    only: horizontal_cubic_sl_kernel_type
   use horizontal_cubic_sl_sphere_kernel_mod,                                   &
                                          only: horizontal_cubic_sl_sphere_kernel_type
@@ -85,6 +89,7 @@ contains
 
     type(transport_controller_type), pointer :: ls_transport_controller
     type(transport_controller_type), pointer :: pert_transport_controller
+    type(transport_controller_type), pointer :: mean_transport_controller
 
     type(field_type) :: ls_field_np1
     type(field_type) :: ls_field_inc
@@ -92,6 +97,8 @@ contains
     type(field_type) :: field_y
     type(field_type) :: ls_field_x
     type(field_type) :: ls_field_y
+    type(field_type) :: ls_field_intermediate
+    logical(kind=l_def) :: linear_scheme
 
     if ( subroutine_timers ) call timer('tl_horizontal_sl_advective_alg')
 
@@ -102,6 +109,7 @@ contains
     ! Transport controller
     ls_transport_controller   => tl_transport_controller%get_ls_wind_pert_rho_controller()
     pert_transport_controller => tl_transport_controller%get_pert_wind_ls_rho_controller()
+    mean_transport_controller => tl_transport_controller%get_ls_wind_ls_rho_controller()
 
     ! Initialise
     call ls_field_np1%initialise(ls_field%get_function_space())
@@ -110,6 +118,7 @@ contains
     call field_y%initialise( field_n%get_function_space() )
     call ls_field_x%initialise( ls_field%get_function_space() )
     call ls_field_y%initialise( ls_field%get_function_space() )
+    call ls_field_intermediate%initialise( ls_field%get_function_space() )
 
     ! Consider advective form transport:
     ! We require the terms ls_u.grad(f') + u'.grad(ls_f)
@@ -120,20 +129,33 @@ contains
 
     call tl_horizontal_sl_inner_alg( field_x, field_y, field_n,                &
                                      ls_transport_controller )
+    linear_scheme = .false.
     call tl_horizontal_sl_outer_alg( field_np1, field_n, field_x, field_y,     &
-                                     ls_transport_controller )
+                                     ls_transport_controller, linear_scheme )
 
     ! ====================================================================== !
     ! perturbation wind ls state u'.grad(ls_f)
     ! ====================================================================== !
 
+    ! u'.grad(ls_f) = u'.grad(ls_f - dt ls u.grad(ls_f))
+
     call tl_horizontal_sl_inner_alg( ls_field_x, ls_field_y, ls_field,         &
+                                     mean_transport_controller )
+    linear_scheme = .true.
+    call tl_horizontal_sl_outer_alg( ls_field_intermediate, ls_field,          &
+                                     ls_field_x, ls_field_y,                   &
+                                     mean_transport_controller, linear_scheme )
+
+    call tl_horizontal_sl_inner_alg( ls_field_x, ls_field_y,                   &
+                                     ls_field_intermediate,                    &
                                      pert_transport_controller )
-    call tl_horizontal_sl_outer_alg( ls_field_np1, ls_field,                   &
-                                     ls_field_x, ls_field_y, pert_transport_controller )
+    linear_scheme = .true.
+    call tl_horizontal_sl_outer_alg( ls_field_np1, ls_field_intermediate,      &
+                                     ls_field_x, ls_field_y,                   &
+                                     pert_transport_controller, linear_scheme )
 
     ! Combine them to update the perturbation field
-    call invoke( X_minus_Y(ls_field_inc, ls_field_np1, ls_field),              &
+    call invoke( X_minus_Y(ls_field_inc, ls_field_np1, ls_field_intermediate), &
                  inc_X_plus_Y( field_np1, ls_field_inc)  )
 
     if ( subroutine_timers ) call timer('tl_horizontal_sl_advective_alg')
@@ -307,7 +329,7 @@ contains
   !!                                        precomputations for controlling the
   !!                                        transport of the field
   subroutine tl_horizontal_sl_outer_alg( field_np1, field_n, field_x, field_y, &
-                                          transport_controller )
+                                          transport_controller, linear_scheme )
 
     implicit none
 
@@ -317,6 +339,7 @@ contains
     type(field_type),                intent(in)    :: field_x
     type(field_type),                intent(in)    :: field_y
     type(transport_controller_type), intent(inout) :: transport_controller
+    logical(kind=l_def),             intent(in)    :: linear_scheme
 
     ! Internal Variables
     type(field_type), target :: field_x_big_halo
@@ -416,29 +439,56 @@ contains
                    setval_x( field_y_big_halo, field_y ) )
     end if
 
-    if (is_cubed_sphere) then
-      call invoke( name='tl_horizontal_cubic_sl_sphere',                       &
-                   horizontal_cubic_sl_sphere_kernel_type(                     &
-                                                increment_x,                   &
-                                                increment_y,                   &
-                                                field_x_big_halo,              &
-                                                stencil_extent,                &
-                                                field_y_big_halo,              &
-                                                stencil_extent,                &
-                                                dep_dist_xy,                   &
-                                                panel_id,                      &
-                                                panel_edge_dist,               &
-                                                hori_monotone ) )
+    if (linear_scheme) then
+      if (is_cubed_sphere) then
+        call invoke( name='tl_horizontal_linear_sl_sphere',                    &
+                     horizontal_linear_outer_sl_sphere_kernel_type(            &
+                                                  increment_x,                 &
+                                                  increment_y,                 &
+                                                  field_x_big_halo,            &
+                                                  stencil_extent,              &
+                                                  field_y_big_halo,            &
+                                                  stencil_extent,              &
+                                                  dep_dist_xy,                 &
+                                                  panel_id,                    &
+                                                  panel_edge_dist,             &
+                                                  hori_monotone ) )
+      else
+        call invoke( horizontal_linear_outer_sl_kernel_type(                   &
+                                                  increment_x,                 &
+                                                  increment_y,                 &
+                                                  field_x_big_halo,            &
+                                                  stencil_extent,              &
+                                                  field_y_big_halo,            &
+                                                  stencil_extent,              &
+                                                  dep_dist_xy,                 &
+                                                  hori_monotone ) )
+      end if
     else
-      call invoke( horizontal_cubic_sl_kernel_type(                            &
-                                                increment_x,                   &
-                                                increment_y,                   &
-                                                field_x_big_halo,              &
-                                                stencil_extent,                &
-                                                field_y_big_halo,              &
-                                                stencil_extent,                &
-                                                dep_dist_xy,                   &
-                                                hori_monotone ) )
+      if (is_cubed_sphere) then
+        call invoke( name='tl_horizontal_cubic_sl_sphere',                     &
+                     horizontal_cubic_sl_sphere_kernel_type(                   &
+                                                  increment_x,                 &
+                                                  increment_y,                 &
+                                                  field_x_big_halo,            &
+                                                  stencil_extent,              &
+                                                  field_y_big_halo,            &
+                                                  stencil_extent,              &
+                                                  dep_dist_xy,                 &
+                                                  panel_id,                    &
+                                                  panel_edge_dist,             &
+                                                  hori_monotone ) )
+      else
+        call invoke( horizontal_cubic_sl_kernel_type(                          &
+                                                  increment_x,                 &
+                                                  increment_y,                 &
+                                                  field_x_big_halo,            &
+                                                  stencil_extent,              &
+                                                  field_y_big_halo,            &
+                                                  stencil_extent,              &
+                                                  dep_dist_xy,                 &
+                                                  hori_monotone ) )
+      end if
     end if
 
     ! Collect the increments

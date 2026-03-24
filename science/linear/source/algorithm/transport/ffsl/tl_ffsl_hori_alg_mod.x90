@@ -96,6 +96,7 @@ module tl_ffsl_hori_alg_mod
   public  :: tl_ffsl_hori_splitting_alg
   public  :: tl_ffsl_hori_inner_alg
   public  :: tl_ffsl_hori_outer_alg
+  public  :: tl_ffsl_full_hori_splitting_alg
 
 contains
 
@@ -162,8 +163,6 @@ contains
     ! Field increments and fluxes in given direction
     type(r_tran_field_type) :: first_increment_x
     type(r_tran_field_type) :: first_increment_y
-    type(r_tran_field_type) :: flux
-    type(r_tran_field_type) :: flux_first
 
     ! Useful constants
     real(kind=r_tran)   :: half_dt
@@ -197,14 +196,12 @@ contains
     end if
 
     ! This is a switch for us to test
-    use_sl_for_advective = .false.
+    use_sl_for_advective = .true.
 
     ! Initialise fields used by all splitting options --------------------------
     call field_x%initialise( vector_space = field_fs )
     call field_y%initialise( vector_space = field_fs )
     call mass_flux%initialise( vector_space = w2h_fs )
-    call flux%initialise( vector_space = w2h_fs )
-    call flux_first%initialise( vector_space = w2h_fs )
 
     ! Set constants
     half_dt = 0.5_r_tran * step_dt
@@ -266,7 +263,7 @@ contains
     ! Use SL for advective form or advective field step
     if (use_sl_for_advective) then
       call tl_horizontal_sl_outer_alg( field_np1, field_n, field_x, field_y, &
-                                          transport_controller )
+                                       transport_controller, linear_scheme )
     end if
 
     if ( subroutine_timers ) call timer(routine_name)
@@ -544,15 +541,15 @@ contains
                                      order, compute_field_np1 )
 
     ! Arguments ----------------------------------------------------------------
-    type(r_tran_field_type),         intent(inout) :: flux
-    type(r_tran_field_type),         intent(inout) :: field_np1
-    type(r_tran_field_type), target, intent(in)    :: field_n
-    type(r_tran_field_type), target, intent(in)    :: field_x
-    type(r_tran_field_type), target, intent(in)    :: field_y
-    real(kind=r_tran),               intent(in)    :: dt
-    type(transport_controller_type), intent(inout) :: transport_controller
-    integer(kind=i_def),             intent(in)    :: order
-    logical(kind=l_def), optional,   intent(in)    :: compute_field_np1
+    type(r_tran_field_type),           intent(inout) :: flux
+    type(r_tran_field_type),           intent(inout) :: field_np1
+    type(r_tran_field_type), target,   intent(in)    :: field_n
+    type(r_tran_field_type), target,   intent(in)    :: field_x
+    type(r_tran_field_type), target,   intent(in)    :: field_y
+    real(kind=r_tran),                 intent(in)    :: dt
+    type(transport_controller_type),   intent(inout) :: transport_controller
+    integer(kind=i_def),               intent(in)    :: order
+    logical(kind=l_def), optional,     intent(in)    :: compute_field_np1
 
     ! Internal variables -------------------------------------------------------
     ! Pointers to existing objects
@@ -832,5 +829,255 @@ contains
     end if
 
   end subroutine tl_ffsl_hori_outer_alg
+
+
+
+  !> @brief Algorithm to control 2D horizontal FFSL splitting in the linear model.
+  !> @details Solves the 2D transport equation, in advective or conservative
+  !!          form, including controlling the splitting between different
+  !!          dimensions. Returns an updated field for advective form and a mass
+  !!          flux for conservative form (these are then passed to the generic
+  !!          end_of_transport routines).
+  !!          One-dimensional flux differences are denoted F and G (while
+  !!          the advective differences are f and g).
+  !> @param[in,out] mass_flux          Mass flux used to transport the field.
+  !!                                   This is only used when the equation is in
+  !!                                   conservative form.
+  !> @param[in,out] field_np1          The updated advected field from the time
+  !!                                   step. Only used when specified through
+  !!                                   the optional logical argument.
+  !> @param[in]     field_n            Field at the start of the transport step
+  !> @param[in]     step_dt            The dt for this time step
+  !> @param[in,out] pert_transport_controller
+  !!                                   Object with metadata and precomputations
+  !!                                   to control the transport of the field
+  !!                                   with pert wind
+  !> @param[in,out] mean_transport_controller
+  !!                                   Object with metadata and precomputations
+  !!                                   to control the transport of the field
+  !!                                   with mean wind
+  !> @param[in]     linear_scheme      Optional argument to use a reconstruction
+  !!                                   that is linear in the advecting wind
+  !> @param[in]     compute_field_np1  Optional argument as to whether advected
+  !!                                   field should be computed
+  subroutine tl_ffsl_full_hori_splitting_alg( mass_flux, field_np1, field_n,   &
+                                         step_dt, pert_transport_controller,   &
+                                         mean_transport_controller,            &
+                                         linear_scheme, compute_field_np1 )
+
+    implicit none
+
+    ! Arguments ----------------------------------------------------------------
+    type(r_tran_field_type),           intent(inout) :: mass_flux
+    type(r_tran_field_type),           intent(inout) :: field_np1
+    type(r_tran_field_type), target,   intent(in)    :: field_n
+    real(kind=r_tran),                 intent(in)    :: step_dt
+    type(transport_controller_type),   intent(inout) :: pert_transport_controller
+    type(transport_controller_type),   intent(inout) :: mean_transport_controller
+    logical(kind=l_def), optional,     intent(in)    :: linear_scheme
+    logical(kind=l_def), optional,     intent(in)    :: compute_field_np1
+
+    ! Internal variables -------------------------------------------------------
+    ! Pointers to existing objects
+    type(mesh_type),               pointer :: mesh
+    type(transport_metadata_type), pointer :: transport_metadata
+
+    ! Full fields
+    type(r_tran_field_type) :: mass_flux_part
+    type(r_tran_field_type) :: field_mean
+
+    ! Function spaces
+    type(function_space_type), pointer :: field_fs
+    type(function_space_type), pointer :: w2h_fs
+
+    ! Transport options
+    logical(kind=l_def) :: to_compute_field_np1
+    logical(kind=l_def) :: do_overwrite
+    logical(kind=l_def) :: use_sl_for_advective
+    integer(kind=i_def) :: equation_form
+
+    ! Subroutine name for timer
+    character(*), parameter :: routine_name = 'transport.tl_ffsl_full_horizontal'
+
+    ! Density substeps in given direction
+    type(r_tran_field_type) :: field_x
+    type(r_tran_field_type) :: field_y
+
+    ! Field increments and fluxes in given direction
+    type(r_tran_field_type) :: first_increment_x
+    type(r_tran_field_type) :: first_increment_y
+
+    ! Useful constants
+    real(kind=r_tran)   :: half_dt
+    integer(kind=i_def) :: inner_order, outer_order
+
+    if ( subroutine_timers ) call timer(routine_name)
+
+    ! Get pre-computed objects and set pointers --------------------------------
+    mesh => field_n%get_mesh()
+    transport_metadata => pert_transport_controller%get_transport_metadata()
+    equation_form = transport_metadata%get_equation_form()
+
+    ! Function spaces
+    field_fs => field_n%get_function_space()
+    w2h_fs => function_space_collection%get_fs(mesh, 0, 0, W2H)
+
+    if (present(compute_field_np1)) then
+      to_compute_field_np1 = compute_field_np1
+    else
+      to_compute_field_np1 = .true.
+    end if
+
+    ! Set order of reconstruction
+    inner_order = ffsl_inner_order
+    outer_order = ffsl_outer_order
+    if (present(linear_scheme)) then
+      if (linear_scheme) then
+        inner_order = 0
+        outer_order = 0
+      end if
+    end if
+
+    ! This is a switch for us to test
+    use_sl_for_advective = .false.
+
+    ! Initialise fields used by all splitting options --------------------------
+    call field_x%initialise( vector_space = field_fs )
+    call field_y%initialise( vector_space = field_fs )
+    call mass_flux%initialise( vector_space = w2h_fs )
+    call mass_flux_part%initialise(vector_space = w2h_fs)
+    call field_mean%initialise(field_n%get_function_space())
+
+    ! Set constants
+    half_dt = 0.5_r_tran * step_dt
+
+    ! Do mean wind transport
+
+    ! COSMIC/Lin-Rood splitting (Leonard et al. 1996, Lin and Rood 1996).
+    ! It has the form
+    !
+    !   rho_x = rho - dt/2 * f(rho,u)
+    !   rho_y = rho - dt/2 * g(rho,v)
+    !
+    !   rho_np1 = rho - dt * F(rho_y,u) - dt * G(rho_x,v)
+    !
+    ! SWIFT splitting (for consistent transport) has the form
+    !
+    !   field_x = (field*rho - dt * F(field,rho_flux))/(rho - dt * F(rho,u))
+    !   field_y = (field*rho - dt * G(field,rho_flux))/(rho - dt * G(rho,v))
+    !
+    !   field_np1 = (1 / rho_np1) * ( field * rho
+    !               - dt / 2 * [ F(field,rho_flux) + F(field_y,rho_flux)
+    !                          + G(field,rho_flux) + G(field_y,rho_flux) ] )
+
+    ! 1st advective step -------------------------------------------------------
+    if (use_sl_for_advective) then
+      ! Use semi-Lagrangian scheme for inner advective step
+      call tl_horizontal_sl_inner_alg( field_x, field_y, field_n,              &
+                                       mean_transport_controller )
+    else
+      ! COSMIC splitting
+      call tl_ffsl_hori_inner_alg( first_increment_x, first_increment_y,       &
+                                   field_n, step_dt, inner_order,              &
+                                   mean_transport_controller )
+      call invoke( X_minus_bY(field_x, field_n, half_dt, first_increment_x),   &
+                   X_minus_bY(field_y, field_n, half_dt, first_increment_y) )
+    end if
+
+    do_overwrite = (                                                           &
+      limited_area .and. topology == topology_non_periodic .and.               &
+      transport_overwrite_freq == transport_overwrite_freq_all                 &
+    )
+    if (do_overwrite) then
+      call overwrite_blending_zone_rtran(                                      &
+              field_x, field_n, depth=transport_boundary_depth                 &
+      )
+      call overwrite_blending_zone_rtran(                                      &
+              field_y, field_n, depth=transport_boundary_depth                 &
+      )
+    end if
+
+    ! Final step (advective or conservative) -----------------------------------
+    if (equation_form == equation_form_conservative .or.                       &
+        .not. use_sl_for_advective) then
+      call tl_ffsl_hori_outer_alg(                                             &
+              mass_flux_part, field_mean, field_n,                             &
+              field_x, field_y, step_dt, mean_transport_controller,            &
+              outer_order, compute_field_np1=.true.                            &
+      )
+    end if
+
+    ! Use SL for advective form or advective field step
+    if (use_sl_for_advective) then
+      call tl_horizontal_sl_outer_alg( field_mean, field_n, field_x,          &
+                                       field_y, mean_transport_controller, linear_scheme )
+    end if
+
+    ! Do pert wind transport using field mean
+
+    ! COSMIC/Lin-Rood splitting (Leonard et al. 1996, Lin and Rood 1996).
+    ! It has the form
+    !
+    !   rho_x = rho - dt/2 * f(rho,u)
+    !   rho_y = rho - dt/2 * g(rho,v)
+    !
+    !   rho_np1 = rho - dt * F(rho_y,u) - dt * G(rho_x,v)
+    !
+    ! SWIFT splitting (for consistent transport) has the form
+    !
+    !   field_x = (field*rho - dt * F(field,rho_flux))/(rho - dt * F(rho,u))
+    !   field_y = (field*rho - dt * G(field,rho_flux))/(rho - dt * G(rho,v))
+    !
+    !   field_np1 = (1 / rho_np1) * ( field * rho
+    !               - dt / 2 * [ F(field,rho_flux) + F(field_y,rho_flux)
+    !                          + G(field,rho_flux) + G(field_y,rho_flux) ] )
+
+    ! 1st advective step -------------------------------------------------------
+    if (use_sl_for_advective) then
+      ! Use semi-Lagrangian scheme for inner advective step
+      call tl_horizontal_sl_inner_alg( field_x, field_y, field_mean,           &
+                                       pert_transport_controller )
+    else
+      ! COSMIC splitting
+      call tl_ffsl_hori_inner_alg( first_increment_x, first_increment_y,       &
+                                   field_mean, step_dt, inner_order,           &
+                                   pert_transport_controller )
+      call invoke( X_minus_bY(field_x, field_mean, half_dt, first_increment_x), &
+                   X_minus_bY(field_y, field_mean, half_dt, first_increment_y) )
+    end if
+
+    do_overwrite = (                                                           &
+      limited_area .and. topology == topology_non_periodic .and.               &
+      transport_overwrite_freq == transport_overwrite_freq_all                 &
+    )
+    if (do_overwrite) then
+      call overwrite_blending_zone_rtran(                                      &
+              field_x, field_mean, depth=transport_boundary_depth              &
+      )
+      call overwrite_blending_zone_rtran(                                      &
+              field_y, field_mean, depth=transport_boundary_depth              &
+      )
+    end if
+
+    ! Final step (advective or conservative) -----------------------------------
+    if (equation_form == equation_form_conservative .or.                       &
+        .not. use_sl_for_advective) then
+      call tl_ffsl_hori_outer_alg(                                             &
+              mass_flux, field_np1, field_n,                                   &
+              field_x, field_y, step_dt, pert_transport_controller,            &
+              outer_order, compute_field_np1=to_compute_field_np1              &
+      )
+    end if
+
+    ! Use SL for advective form or advective field step
+    if (use_sl_for_advective) then
+      call tl_horizontal_sl_outer_alg( field_np1, field_mean, field_x,         &
+                                       field_y, pert_transport_controller, linear_scheme )
+    end if
+
+    if ( subroutine_timers ) call timer(routine_name)
+
+  end subroutine tl_ffsl_full_hori_splitting_alg
+
 
 end module tl_ffsl_hori_alg_mod

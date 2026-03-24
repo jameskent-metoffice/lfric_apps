@@ -28,6 +28,30 @@
         "plot_str": "linear.py $NODAL_DATA_DIR/lfric_diag.nc $PLOT_DIR 70 linear_model-nwp-gal9_C12 theta:exner:rho:u_in_w2h:v_in_w2h:w_in_wth:m_v:m_cl:m_r:m_s 120:0:5",
     }) %}
 
+{% elif task_ns.conf_name == "nwp_gal9_long-C12_MG" %}
+
+    {% do task_dict.update({
+        "opt_confs": ["nwp_gal9_c12"],
+        "resolution": "C12_MG",
+        "DT": 1800,
+        "tsteps": 48,
+        "mpi_parts": 6,
+        "kgo_checks": [],
+        "plot_str": "linear.py $NODAL_DATA_DIR/lfric_diag.nc $PLOT_DIR 70 linear_model-nwp-gal9_C12 theta:exner:rho:u_in_w2h:v_in_w2h:w_in_wth:m_v:m_cl:m_r:m_s 120:0:5",
+    }) %}
+
+{% elif task_ns.conf_name == "nwp_gal9_ffsl_long-C12_MG" %}
+
+    {% do task_dict.update({
+        "opt_confs": ["nwp_gal9_c12","ffsl"],
+        "resolution": "C12_MG",
+        "DT": 1800,
+        "tsteps": 48,
+        "mpi_parts": 6,
+        "kgo_checks": [],
+        "plot_str": "linear.py $NODAL_DATA_DIR/lfric_diag.nc $PLOT_DIR 70 linear_model-nwp-gal9_C12 theta:exner:rho:u_in_w2h:v_in_w2h:w_in_wth:m_v:m_cl:m_r:m_s 120:0:5",
+    }) %}
+
 {% elif task_ns.conf_name == "nwp_gal9_sl-C12_MG" %}
 
     {% do task_dict.update({
@@ -116,6 +140,294 @@
         "mpi_parts_xios" : 16,
         "log_level": "debug",
         "tech-tests_wallclock": 30,
+        "kgo_checks": [],
+        "plot_str": "linear.py $NODAL_DATA_DIR/lfric_diag.nc $PLOT_DIR 70 linear_model-nwp-gal9_C224 theta:exner:rho:u_in_w2h 120:0:5",
+    }) %}
+
+{% elif task_ns.conf_name == "nwp_gal9_dt1800-C224_MG" %}
+
+    {% do task_dict.update({
+        "opt_confs": ["nwp_gal9_c224"],
+        "resolution": "C224_MG",
+        "DT": 1800,
+        "tsteps": 12,
+        "mpi_parts": 1176,
+        "xios_nodes": 4,
+        "mpi_parts_xios" : 16,
+        "log_level": "info",
+        "tech-tests_wallclock": 30,
+        "kgo_checks": [],
+        "plot_str": "linear.py $NODAL_DATA_DIR/lfric_diag.nc $PLOT_DIR 70 linear_model-nwp-gal9_C224 theta:exner:rho:u_in_w2h 120:0:5",
+    }) %}
+
+{% elif task_ns.conf_name == "nwp_gal9_ffsl_dt1800-C224_MG" %}
+
+    {% do task_dict.update({
+        "opt_confs": ["nwp_gal9_c224","ffsl"],
+        "resolution": "C224_MG",
+        "DT": 1800,
+        "tsteps": 12,
+        "mpi_parts": 1176,
+        "xios_nodes": 4,
+        "mpi_parts_xios" : 16,
+        "log_level": "info",
+        "tech-tests_wallclock": 30,
+        "kgo_checks": [],
+        "plot_str": "linear.py $NODAL_DATA_DIR/lfric_diag.nc $PLOT_DIR 70 linear_model-nwp-gal9_C224 theta:exner:rho:u_in_w2h 120:0:5",
+    }) %}
+
+{% elif task_ns.conf_name == "nwp_gal9_sl_dt1800-C224_MG" %}
+
+    {% do task_dict.update({
+        "opt_confs": ["nwp_gal9_c224","sl"],
+        "resolution": "C224_MG",
+        "DT": 1800,
+        "tsteps": 12,
+        "mpi_parts": 1176,
+        "xios_nodes": 4,
+        "mpi_parts_xios" : 16,
+        "log_level": "info",
+        "tech-tests_wallclock": 30,
+        "kgo_checks": [],
+        "plot_str": "linear.py $NODAL_DATA_DIR/lfric_diag.nc $PLOT_DIR 70 linear_model-nwp-gal9_C224 theta:exner:rho:u_in_w2h 120:0:5",
+    }) %}
+
+{% elif task_ns.conf_name == "nwp_gal9_threedmol_dt1800-C224_MG" %}
+
+    {% do task_dict.update({
+        "opt_confs": ["nwp_gal9_c224","threedmol"],
+        "resolution": "C224_MG",
+        "DT": 1800,
+        "tsteps": 12,
+        "mpi_parts": 1176,
+        "xios_nodes": 4,
+        "mpi_parts_xios" : 16,
+        "log_level": "info",
+        "tech-tests_wallclock": 30,
+        "kgo_checks": [],
+        "plot_str": "linear.py $NODAL_DATA_DIR/lfric_diag.nc $PLOT_DIR 70 linear_model-nwp-gal9_C224 theta:exner:rho:u_in_w2h 120:0:5",
+    }) %}
+
+{% elif task_ns.conf_name == "nwp_gal9_dt900-C224_MG" %}
+
+    {% do task_dict.update({
+        "opt_confs": ["nwp_gal9_c224"],
+        "resolution": "C224_MG",
+        "DT": 900,
+        "tsteps": 24,
+        "mpi_parts": 1176,
+        "xios_nodes": 4,
+        "mpi_parts_xios" : 16,
+        "log_level": "info",
+        "tech-tests_wallclock": 30,
+        "kgo_checks": [],
+        "plot_str": "linear.py $NODAL_DATA_DIR/lfric_diag.nc $PLOT_DIR 70 linear_model-nwp-gal9_C224 theta:exner:rho:u_in_w2h 120:0:5",
+    }) %}
+
+{% elif task_ns.conf_name == "nwp_gal9_ffsl_dt900-C224_MG" %}
+
+    {% do task_dict.update({
+        "opt_confs": ["nwp_gal9_c224","ffsl"],
+        "resolution": "C224_MG",
+        "DT": 900,
+        "tsteps": 24,
+        "mpi_parts": 1176,
+        "xios_nodes": 4,
+        "mpi_parts_xios" : 16,
+        "log_level": "info",
+        "tech-tests_wallclock": 30,
+        "kgo_checks": [],
+        "plot_str": "linear.py $NODAL_DATA_DIR/lfric_diag.nc $PLOT_DIR 70 linear_model-nwp-gal9_C224 theta:exner:rho:u_in_w2h 120:0:5",
+    }) %}
+
+{% elif task_ns.conf_name == "nwp_gal9_sl_dt900-C224_MG" %}
+
+    {% do task_dict.update({
+        "opt_confs": ["nwp_gal9_c224","sl"],
+        "resolution": "C224_MG",
+        "DT": 900,
+        "tsteps": 24,
+        "mpi_parts": 1176,
+        "xios_nodes": 4,
+        "mpi_parts_xios" : 16,
+        "log_level": "info",
+        "tech-tests_wallclock": 30,
+        "kgo_checks": [],
+        "plot_str": "linear.py $NODAL_DATA_DIR/lfric_diag.nc $PLOT_DIR 70 linear_model-nwp-gal9_C224 theta:exner:rho:u_in_w2h 120:0:5",
+    }) %}
+
+{% elif task_ns.conf_name == "nwp_gal9_threedmol_dt900-C224_MG" %}
+
+    {% do task_dict.update({
+        "opt_confs": ["nwp_gal9_c224","threedmol"],
+        "resolution": "C224_MG",
+        "DT": 900,
+        "tsteps": 24,
+        "mpi_parts": 1176,
+        "xios_nodes": 4,
+        "mpi_parts_xios" : 16,
+        "log_level": "info",
+        "tech-tests_wallclock": 30,
+        "kgo_checks": [],
+        "plot_str": "linear.py $NODAL_DATA_DIR/lfric_diag.nc $PLOT_DIR 70 linear_model-nwp-gal9_C224 theta:exner:rho:u_in_w2h 120:0:5",
+    }) %}
+
+{% elif task_ns.conf_name == "nwp_gal9_dt450-C224_MG" %}
+
+    {% do task_dict.update({
+        "opt_confs": ["nwp_gal9_c224"],
+        "resolution": "C224_MG",
+        "DT": 450,
+        "tsteps": 48,
+        "mpi_parts": 1176,
+        "xios_nodes": 4,
+        "mpi_parts_xios" : 16,
+        "log_level": "info",
+        "tech-tests_wallclock": 40,
+        "kgo_checks": [],
+        "plot_str": "linear.py $NODAL_DATA_DIR/lfric_diag.nc $PLOT_DIR 70 linear_model-nwp-gal9_C224 theta:exner:rho:u_in_w2h 120:0:5",
+    }) %}
+
+{% elif task_ns.conf_name == "nwp_gal9_ffsl_dt450-C224_MG" %}
+
+    {% do task_dict.update({
+        "opt_confs": ["nwp_gal9_c224","ffsl"],
+        "resolution": "C224_MG",
+        "DT": 450,
+        "tsteps": 48,
+        "mpi_parts": 1176,
+        "xios_nodes": 4,
+        "mpi_parts_xios" : 16,
+        "log_level": "info",
+        "tech-tests_wallclock": 40,
+        "kgo_checks": [],
+        "plot_str": "linear.py $NODAL_DATA_DIR/lfric_diag.nc $PLOT_DIR 70 linear_model-nwp-gal9_C224 theta:exner:rho:u_in_w2h 120:0:5",
+    }) %}
+
+{% elif task_ns.conf_name == "nwp_gal9_sl_dt450-C224_MG" %}
+
+    {% do task_dict.update({
+        "opt_confs": ["nwp_gal9_c224","sl"],
+        "resolution": "C224_MG",
+        "DT": 450,
+        "tsteps": 48,
+        "mpi_parts": 1176,
+        "xios_nodes": 4,
+        "mpi_parts_xios" : 16,
+        "log_level": "info",
+        "tech-tests_wallclock": 40,
+        "kgo_checks": [],
+        "plot_str": "linear.py $NODAL_DATA_DIR/lfric_diag.nc $PLOT_DIR 70 linear_model-nwp-gal9_C224 theta:exner:rho:u_in_w2h 120:0:5",
+    }) %}
+
+{% elif task_ns.conf_name == "nwp_gal9_threedmol_dt450-C224_MG" %}
+
+    {% do task_dict.update({
+        "opt_confs": ["nwp_gal9_c224","threedmol"],
+        "resolution": "C224_MG",
+        "DT": 450,
+        "tsteps": 48,
+        "mpi_parts": 1176,
+        "xios_nodes": 4,
+        "mpi_parts_xios" : 16,
+        "log_level": "info",
+        "tech-tests_wallclock": 40,
+        "kgo_checks": [],
+        "plot_str": "linear.py $NODAL_DATA_DIR/lfric_diag.nc $PLOT_DIR 70 linear_model-nwp-gal9_C224 theta:exner:rho:u_in_w2h 120:0:5",
+    }) %}
+
+{% elif task_ns.conf_name == "nwp_gal9_dt900_ts12-C224_MG" %}
+
+    {% do task_dict.update({
+        "opt_confs": ["nwp_gal9_c224"],
+        "resolution": "C224_MG",
+        "DT": 900,
+        "tsteps": 12,
+        "mpi_parts": 1176,
+        "xios_nodes": 4,
+        "mpi_parts_xios" : 16,
+        "log_level": "info",
+        "tech-tests_wallclock": 30,
+        "kgo_checks": [],
+        "plot_str": "linear.py $NODAL_DATA_DIR/lfric_diag.nc $PLOT_DIR 70 linear_model-nwp-gal9_C224 theta:exner:rho:u_in_w2h 120:0:5",
+    }) %}
+
+{% elif task_ns.conf_name == "nwp_gal9_ffsl_dt900_ts12-C224_MG" %}
+
+    {% do task_dict.update({
+        "opt_confs": ["nwp_gal9_c224","ffsl"],
+        "resolution": "C224_MG",
+        "DT": 900,
+        "tsteps": 12,
+        "mpi_parts": 1176,
+        "xios_nodes": 4,
+        "mpi_parts_xios" : 16,
+        "log_level": "info",
+        "tech-tests_wallclock": 30,
+        "kgo_checks": [],
+        "plot_str": "linear.py $NODAL_DATA_DIR/lfric_diag.nc $PLOT_DIR 70 linear_model-nwp-gal9_C224 theta:exner:rho:u_in_w2h 120:0:5",
+    }) %}
+
+{% elif task_ns.conf_name == "nwp_gal9_dt900_ts13-C224_MG" %}
+
+    {% do task_dict.update({
+        "opt_confs": ["nwp_gal9_c224","ts13"],
+        "resolution": "C224_MG",
+        "DT": 900,
+        "tsteps": 13,
+        "mpi_parts": 1176,
+        "xios_nodes": 4,
+        "mpi_parts_xios" : 16,
+        "log_level": "info",
+        "tech-tests_wallclock": 30,
+        "kgo_checks": [],
+        "plot_str": "linear.py $NODAL_DATA_DIR/lfric_diag.nc $PLOT_DIR 70 linear_model-nwp-gal9_C224 theta:exner:rho:u_in_w2h 120:0:5",
+    }) %}
+
+{% elif task_ns.conf_name == "nwp_gal9_ffsl_dt900_ts13-C224_MG" %}
+
+    {% do task_dict.update({
+        "opt_confs": ["nwp_gal9_c224","ffsl","ts13"],
+        "resolution": "C224_MG",
+        "DT": 900,
+        "tsteps": 13,
+        "mpi_parts": 1176,
+        "xios_nodes": 4,
+        "mpi_parts_xios" : 16,
+        "log_level": "info",
+        "tech-tests_wallclock": 30,
+        "kgo_checks": [],
+        "plot_str": "linear.py $NODAL_DATA_DIR/lfric_diag.nc $PLOT_DIR 70 linear_model-nwp-gal9_C224 theta:exner:rho:u_in_w2h 120:0:5",
+    }) %}
+
+{% elif task_ns.conf_name == "nwp_gal9_dt450_ts43-C224_MG" %}
+
+    {% do task_dict.update({
+        "opt_confs": ["nwp_gal9_c224","ts43"],
+        "resolution": "C224_MG",
+        "DT": 450,
+        "tsteps": 43,
+        "mpi_parts": 1176,
+        "xios_nodes": 4,
+        "mpi_parts_xios" : 16,
+        "log_level": "info",
+        "tech-tests_wallclock": 40,
+        "kgo_checks": [],
+        "plot_str": "linear.py $NODAL_DATA_DIR/lfric_diag.nc $PLOT_DIR 70 linear_model-nwp-gal9_C224 theta:exner:rho:u_in_w2h 120:0:5",
+    }) %}
+
+{% elif task_ns.conf_name == "nwp_gal9_ffsl_dt450_ts43-C224_MG" %}
+
+    {% do task_dict.update({
+        "opt_confs": ["nwp_gal9_c224","ffsl","ts43"],
+        "resolution": "C224_MG",
+        "DT": 450,
+        "tsteps": 43,
+        "mpi_parts": 1176,
+        "xios_nodes": 4,
+        "mpi_parts_xios" : 16,
+        "log_level": "info",
+        "tech-tests_wallclock": 40,
         "kgo_checks": [],
         "plot_str": "linear.py $NODAL_DATA_DIR/lfric_diag.nc $PLOT_DIR 70 linear_model-nwp-gal9_C224 theta:exner:rho:u_in_w2h 120:0:5",
     }) %}

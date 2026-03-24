@@ -38,6 +38,7 @@ module tl_ffsl_vert_alg_mod
   use copy_field_alg_mod,               only: copy_field
   use ffsl_advective_updates_alg_mod,   only: swift_inner_update_tracer,       &
                                               ffsl_advective_increment
+  use tl_vertical_sl_advective_alg_mod, only: tl_vertical_sl_advective_alg
 
   ! Kernels
   use ffsl_flux_z_constant_kernel_mod,  only: ffsl_flux_z_constant_kernel_type
@@ -60,6 +61,7 @@ module tl_ffsl_vert_alg_mod
 
   public :: tl_ffsl_vert_transport_alg
   public :: tl_ffsl_1d_vert_flux_alg
+  public :: tl_ffsl_full_vert_transport_alg
 
 contains
 
@@ -137,7 +139,7 @@ contains
     end if
 
     ! This is a switch for us to test
-    use_sl_for_advective = .false.
+    use_sl_for_advective = .true.
 
     if (equation_form == equation_form_conservative .or. &
         .not. use_sl_for_advective ) then
@@ -353,5 +355,189 @@ contains
     end select
 
   end subroutine tl_ffsl_1d_vert_flux_alg
+
+
+  !> @brief Algorithm for a step of 1D vertical FFSL transport in the linear model.
+  !> @details Solves the 1D transport equation, in either advective or
+  !!          conservative form, for the linear model. If needed, the mass flux or
+  !!          updated field will be returned.
+  !> @param[in,out] mass_flux          Mass flux used to transport the field.
+  !> @param[in,out] field_np1          The updated advected field from the time
+  !!                                   step. Only used when specified through
+  !!                                   the optional logical argument.
+  !> @param[in]     field_n            Field at the start of the transport step
+  !> @param[in]     step_dt            The dt for this time step
+  !> @param[in,out] pert_transport_controller
+  !!                                   Object with metadata and precomputations
+  !!                                   to control the transport of the field
+  !!                                   with pert wind
+  !> @param[in,out] mean_transport_controller
+  !!                                   Object with metadata and precomputations
+  !!                                   to control the transport of the field
+  !!                                   with mean wind
+  !> @param[in]     order              The reconstruction order to pass to
+  !!                                   the underlying vertical flux algorithm
+  !> @param[in]     compute_field_np1  Optional argument as to whether advected
+  !!                                   field should be computed
+  subroutine tl_ffsl_full_vert_transport_alg( mass_flux, field_np1, field_n,   &
+                                              step_dt,                         &
+                                              pert_transport_controller,       &
+                                              mean_transport_controller,       &
+                                              order, compute_field_np1 )
+
+    implicit none
+
+    ! Arguments ----------------------------------------------------------------
+    type(r_tran_field_type),         intent(inout) :: mass_flux
+    type(r_tran_field_type),         intent(inout) :: field_np1
+    type(r_tran_field_type),         intent(in)    :: field_n
+    real(kind=r_tran),               intent(in)    :: step_dt
+    type(transport_controller_type), intent(inout) :: pert_transport_controller
+    type(transport_controller_type), intent(inout) :: mean_transport_controller
+    integer(kind=i_def),             intent(in)    :: order
+    logical(kind=l_def),   optional, intent(in)    :: compute_field_np1
+
+    ! Internal variables -------------------------------------------------------
+    ! Pointers to existing objects
+    type(transport_counter_type),    pointer :: transport_counter
+    type(transport_metadata_type),   pointer :: transport_metadata
+    type(wind_precomputations_type), pointer :: wind_precomputations
+    type(mesh_type),                 pointer :: mesh
+    type(r_tran_field_type),         pointer :: adv_one
+    type(r_tran_field_type),         pointer :: detj_at_w3
+    type(r_tran_field_type)                  :: increment
+
+    ! Full fields
+    type(r_tran_field_type) :: mass_flux_part
+
+    ! Function spaces
+    type(function_space_type), pointer :: field_fs
+    type(function_space_type), pointer :: w2v_fs
+
+    ! Transport options
+    logical(kind=l_def) :: to_compute_field_np1
+    integer(kind=i_def) :: equation_form
+    integer(kind=i_def) :: splitting
+    logical(kind=l_def) :: use_sl_for_advective
+    logical(kind=l_def) :: linear_scheme
+
+    type(r_tran_field_type)                  :: ls_field_np1
+
+    ! Subroutine name for timer
+    character(*), parameter :: routine_name = 'transport.tl_ffsl_full_vertical'
+
+    ! Useful constants
+    integer(kind=i_def) :: mesh_id, step
+
+    if ( subroutine_timers ) call timer(routine_name)
+
+    ! Get information from transport controller
+    transport_counter  => pert_transport_controller%get_transport_counter()
+    transport_metadata => pert_transport_controller%get_transport_metadata()
+    splitting = transport_metadata%get_splitting()
+    equation_form = transport_metadata%get_equation_form()
+
+    if (present(compute_field_np1)) then
+      to_compute_field_np1 = compute_field_np1
+    else
+      to_compute_field_np1 = .true.
+    end if
+
+    ! This is a switch for us to test
+    use_sl_for_advective = .false.
+
+    ! Mesh and function spaces
+    mesh_id = field_n%get_mesh_id()
+    mesh => field_n%get_mesh()
+    field_fs => field_n%get_function_space()
+    w2v_fs => function_space_collection%get_fs( mesh, 0, 0, W2V )
+    call ls_field_np1%initialise( vector_space = field_fs )
+
+    ! u'.grad(ls_f) = u'.grad(ls_f - dt ls u.grad(ls_f))
+
+    if (equation_form == equation_form_conservative .or. &
+        .not. use_sl_for_advective ) then
+      ! Vertical FFSL flux -----------------------------------------------------
+      call mass_flux_part%initialise(vector_space = w2v_fs)
+      call tl_ffsl_1d_vert_flux_alg(                                           &
+              mass_flux_part, field_n, step_dt, mean_transport_controller,     &
+              order                                                            &
+      )
+    end if
+
+    ! Compute advected ls field
+    if (use_sl_for_advective) then
+      ! Use semi-Lagrangian scheme for advective transport
+      if ( order == 0_i_def ) then
+        linear_scheme = .true.
+      else
+        linear_scheme = .false.
+      end if
+      call tl_vertical_sl_advective_alg( ls_field_np1, field_n,                &
+                                         mean_transport_controller, linear_scheme )
+    else
+      ! Use FFSL flux to compute advective update
+      ! Get pre-computed objects
+      detj_at_w3 => get_detj_at_w3_r_tran(mesh_id)
+      wind_precomputations => mean_transport_controller%get_wind_precomputations()
+      step = transport_counter%get_split_step_of_substep_counter()
+
+      ! Get unity transport
+      adv_one => wind_precomputations%get_adv_unity_z(mesh_id, splitting, step)
+
+      ! Take divergence of flux to get conservative increment
+      call increment%initialise( vector_space = field_fs )
+      call invoke( fv_divergence_z_kernel_type(increment, mass_flux_part, detj_at_w3) )
+      ! Get the advective increment from these conservative increments
+      call ffsl_advective_increment(increment, field_n, step_dt, adv_one)
+      ! Update field over this step
+      call invoke( X_minus_bY(ls_field_np1, field_n, step_dt, increment) )
+    end if
+
+    if (equation_form == equation_form_conservative .or. &
+        .not. use_sl_for_advective ) then
+      ! Vertical FFSL flux -----------------------------------------------------
+      call mass_flux%initialise(vector_space = w2v_fs)
+      call tl_ffsl_1d_vert_flux_alg(                                           &
+              mass_flux, ls_field_np1, step_dt, pert_transport_controller,     &
+              order                                                            &
+      )
+    end if
+
+    ! Compute advected field, if required --------------------------------------
+    if (to_compute_field_np1) then
+      if (use_sl_for_advective) then
+        ! Use semi-Lagrangian scheme for advective transport
+        if ( order == 0_i_def ) then
+          linear_scheme = .true.
+        else
+          linear_scheme = .false.
+        end if
+        call tl_vertical_sl_advective_alg( field_np1, ls_field_np1,                &
+                                         pert_transport_controller, linear_scheme )
+
+      else
+        ! Use FFSL flux to compute advective update
+        ! Get pre-computed objects
+        detj_at_w3 => get_detj_at_w3_r_tran(mesh_id)
+        wind_precomputations => pert_transport_controller%get_wind_precomputations()
+        step = transport_counter%get_split_step_of_substep_counter()
+
+        ! Get unity transport
+        adv_one => wind_precomputations%get_adv_unity_z(mesh_id, splitting, step)
+
+        ! Take divergence of flux to get conservative increment
+        call increment%initialise( vector_space = field_fs )
+        call invoke( fv_divergence_z_kernel_type(increment, mass_flux, detj_at_w3) )
+        ! Get the advective increment from these conservative increments
+        call ffsl_advective_increment(increment, field_n, step_dt, adv_one)
+        ! Update field over this step
+        call invoke( X_minus_bY(field_np1, field_n, step_dt, increment) )
+      end if
+    end if
+
+    if ( subroutine_timers ) call timer(routine_name)
+
+  end subroutine tl_ffsl_full_vert_transport_alg
 
 end module tl_ffsl_vert_alg_mod

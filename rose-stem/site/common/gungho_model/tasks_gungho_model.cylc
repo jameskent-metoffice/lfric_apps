@@ -34,6 +34,32 @@
         "plot_str": "baroclinic.py $NODAL_DATA_DIR/lfric_diag.nc $PLOT_DIR dcmip dry surface_pressure_temperature",
     }) %}
 
+{% elif task_ns.conf_name == "baroclinic_adhimex-C24_MG" %}
+
+    {% do task_dict.update({
+        "opt_confs": ["baroclinic","adhimex"],
+        "resolution": "C24_MG",
+        "DT": 3600,
+        "threads": 4,
+        "mpi_parts": 6,
+        "tsteps": 240,
+        "kgo_checks": [],
+        "plot_str": "baroclinic.py $NODAL_DATA_DIR/lfric_diag.nc $PLOT_DIR dcmip dry surface_pressure_temperature",
+    }) %}
+
+{% elif task_ns.conf_name == "baroclinic_adhimex_mol-C24_MG" %}
+
+    {% do task_dict.update({
+        "opt_confs": ["baroclinic","adhimex_mol"],
+        "resolution": "C24_MG",
+        "DT": 3600,
+        "threads": 4,
+        "mpi_parts": 6,
+        "tsteps": 240,
+        "kgo_checks": [],
+        "plot_str": "baroclinic.py $NODAL_DATA_DIR/lfric_diag.nc $PLOT_DIR dcmip dry surface_pressure_temperature",
+    }) %}
+
 {% elif task_ns.conf_name == "baroclinic-C48_MG" %}
 
     {% do task_dict.update({
@@ -497,12 +523,41 @@
     {% do task_dict.update({
         "opt_confs": ["straka_200m"],
         "resolution": "BiP256x8-200x200",
-        "DT": 5,
+        "DT": 10,
         "mpi_parts": 8,
-        "tsteps": 180,
+        "tsteps": 90,
         "panel_decomp": "row",
         "use_xios": false,
-        "plot_str": "straka_plot_x.py diagGungho $NODAL_DATA_DIR 256 8 theta T000180 $PLOT_DIR",
+        "kgo_checks": [],
+        "plot_str": "straka_plot_x.py diagGungho $NODAL_DATA_DIR 256 8 theta T000090 $PLOT_DIR",
+    }) %}
+
+{% elif task_ns.conf_name == "straka_adhimex_200m-BiP256x8-200x200" %}
+
+    {% do task_dict.update({
+        "opt_confs": ["straka_200m","adhimex"],
+        "resolution": "BiP256x8-200x200",
+        "DT": 10,
+        "mpi_parts": 8,
+        "tsteps": 90,
+        "panel_decomp": "row",
+        "use_xios": false,
+        "kgo_checks": [],
+        "plot_str": "straka_plot_x.py diagGungho $NODAL_DATA_DIR 256 8 theta T000090 $PLOT_DIR",
+    }) %}
+
+{% elif task_ns.conf_name == "straka_adhimex_mol_200m-BiP256x8-200x200" %}
+
+    {% do task_dict.update({
+        "opt_confs": ["straka_200m","adhimex_mol"],
+        "resolution": "BiP256x8-200x200",
+        "DT": 10,
+        "mpi_parts": 8,
+        "tsteps": 90,
+        "panel_decomp": "row",
+        "use_xios": false,
+        "kgo_checks": [],
+        "plot_str": "straka_plot_x.py diagGungho $NODAL_DATA_DIR 256 8 theta T000090 $PLOT_DIR",
     }) %}
 
 {% elif task_ns.conf_name == "straka_200m-alt1-BiP256x4-200x200" %}

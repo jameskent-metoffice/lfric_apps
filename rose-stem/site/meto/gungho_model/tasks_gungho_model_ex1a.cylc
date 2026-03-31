@@ -29,6 +29,18 @@
         "memory": [24, "GB"],
     }) %}
 
+{% elif task_ns.conf_name == "robert-moist-adhimex-l300-BiP200x8-5x5" %}
+
+    {% do task_dict.update({
+        "memory": [24, "GB"],
+    }) %}
+
+{% elif task_ns.conf_name == "robert-moist-adhimex_mol-l300-BiP200x8-5x5" %}
+
+    {% do task_dict.update({
+        "memory": [24, "GB"],
+    }) %}
+
 {% elif task_ns.conf_name == "sbr-C48_MG" %}
 
     {% do task_dict.update({

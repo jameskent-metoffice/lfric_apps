@@ -180,6 +180,36 @@
         "plot_str": "robert_plot.py diagGungho $NODAL_DATA_DIR 200 8 theta:m_v T000864:T001296 $PLOT_DIR",
     }) %}
 
+{% elif task_ns.conf_name == "robert-moist-adhimex-l300-BiP200x8-5x5" %}
+
+    {% do task_dict.update({
+        "opt_confs": ["robert-moist-smag-l300","adhimex"],
+        "resolution": "BiP200x8-5x5",
+        "DT": 0.625,
+        "mpi_parts": 50,
+        "panel_decomp": "row",
+        "tsteps": 1296,
+        "use_xios": false,
+        "wallclock": 90,
+        "kgo_checks": [],
+        "plot_str": "robert_plot.py diagGungho $NODAL_DATA_DIR 200 8 theta:m_v T000864:T001296 $PLOT_DIR",
+    }) %}
+
+{% elif task_ns.conf_name == "robert-moist-adhimex_mol-l300-BiP200x8-5x5" %}
+
+    {% do task_dict.update({
+        "opt_confs": ["robert-moist-smag-l300","adhimex_mol"],
+        "resolution": "BiP200x8-5x5",
+        "DT": 0.625,
+        "mpi_parts": 50,
+        "panel_decomp": "row",
+        "tsteps": 1296,
+        "use_xios": false,
+        "wallclock": 90,
+        "kgo_checks": [],
+        "plot_str": "robert_plot.py diagGungho $NODAL_DATA_DIR 200 8 theta:m_v T000864:T001296 $PLOT_DIR",
+    }) %}
+
 {% elif task_ns.conf_name == "sbr-C48_MG" %}
 
     {% do task_dict.update({

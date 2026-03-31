@@ -114,6 +114,17 @@
         "gungho_model_tidally-locked-earth-C24_MG_ex1a_gnu_fast-debug-64bit",
         "gungho_model_ex1a_canned",
     ],
+    "gungho_model_ex1a_adhimex": [
+        "gungho_model_straka_200m-BiP256x8-200x200_ex1a_gnu_fast-debug-64bit",
+        "gungho_model_straka_adhimex_200m-BiP256x8-200x200_ex1a_gnu_fast-debug-64bit",
+        "gungho_model_straka_adhimex_mol_200m-BiP256x8-200x200_ex1a_gnu_fast-debug-64bit",
+        "gungho_model_robert-moist-smag-l300-BiP200x8-5x5_ex1a_gnu_fast-debug-64bit",
+        "gungho_model_robert-moist-adhimex-l300-BiP200x8-5x5_ex1a_gnu_fast-debug-64bit",
+        "gungho_model_robert-moist-adhimex_mol-l300-BiP200x8-5x5_ex1a_gnu_fast-debug-64bit",
+        "gungho_model_baroclinic-C24_MG_ex1a_gnu_fast-debug-64bit",
+        "gungho_model_baroclinic_adhimex-C24_MG_ex1a_gnu_fast-debug-64bit",
+        "gungho_model_baroclinic_adhimex_mol-C24_MG_ex1a_gnu_fast-debug-64bit",
+    ],
     "gungho_model_ex1a_C256_performance_perftools": [
         "gungho_model_gh_profile_omp1_3nodes-C256_MG_ex1a_perftools-gnu_production-64bit",
         "gungho_model_gh_profile_omp1_6nodes-C256_MG_ex1a_perftools-gnu_production-64bit",

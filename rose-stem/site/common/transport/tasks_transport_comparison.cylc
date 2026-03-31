@@ -95,10 +95,36 @@
     {% do task_dict.update({
         "opt_confs": ["sbr_vertical"],
         "resolution": "C24",
-        "DT": 3600,
-        "tsteps": 288,
+        "DT": 7200,
+        "tsteps": 144,
         "mpi_parts": 12,
-        "wallclock": 60,
+        "wallclock": 30,
+        "kgo_checks": [],
+        "plot_str": "spherical_and_vertical_slice_ugrid_plot.py $NODAL_DATA_DIR/lfric_diag.nc $PLOT_DIR rho:theta:tracer_con:tracer_adv:m_v xz all linear sbr",
+    }) %}
+
+{% elif task_ns.conf_name == "sbr_vertical_adhimex-C24" %}
+
+    {% do task_dict.update({
+        "opt_confs": ["sbr_vertical","adhimex"],
+        "resolution": "C24",
+        "DT": 7200,
+        "tsteps": 144,
+        "mpi_parts": 12,
+        "wallclock": 30,
+        "kgo_checks": [],
+        "plot_str": "spherical_and_vertical_slice_ugrid_plot.py $NODAL_DATA_DIR/lfric_diag.nc $PLOT_DIR rho:theta:tracer_con:tracer_adv:m_v xz all linear sbr",
+    }) %}
+
+{% elif task_ns.conf_name == "sbr_vertical_adhimex_mol-C24" %}
+
+    {% do task_dict.update({
+        "opt_confs": ["sbr_vertical","adhimex_mol"],
+        "resolution": "C24",
+        "DT": 7200,
+        "tsteps": 144,
+        "mpi_parts": 12,
+        "wallclock": 30,
         "kgo_checks": [],
         "plot_str": "spherical_and_vertical_slice_ugrid_plot.py $NODAL_DATA_DIR/lfric_diag.nc $PLOT_DIR rho:theta:tracer_con:tracer_adv:m_v xz all linear sbr",
     }) %}
@@ -353,8 +379,9 @@
         "DT": 4,
         "tsteps": 500,
         "mpi_parts": 4,
-        "wallclock": 180,
+        "wallclock": 30,
         "kgo_checks": [],
+        "log_level": "info",
         "plot_str": "spherical_and_vertical_slice_ugrid_plot.py $NODAL_DATA_DIR/lfric_diag.nc $PLOT_DIR rho:theta:tracer_con:tracer_adv:m_v:constant xz all linear rotational",
     }) %}
 

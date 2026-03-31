@@ -178,6 +178,32 @@
         "plot_str": "spherical_and_vertical_slice_ugrid_plot.py $NODAL_DATA_DIR/lfric_diag.nc $PLOT_DIR theta:tracer_con:tracer_adv:m_v xz all linear cylinder",
     }) %}
 
+{% elif task_ns.conf_name == "cylinder_xz_adhimex_bigcfl-BiP100x10-20x20" %}
+
+    {% do task_dict.update({
+        "opt_confs": ["cylinder_xz_bigcfl","adhimex"],
+        "resolution": "BiP100x10-20x20",
+        "DT": 50,
+        "tsteps": 40,
+        "mpi_parts": 4,
+        "wallclock": 30,
+        "kgo_checks": [],
+        "plot_str": "spherical_and_vertical_slice_ugrid_plot.py $NODAL_DATA_DIR/lfric_diag.nc $PLOT_DIR theta:tracer_con:tracer_adv:m_v xz all linear cylinder",
+    }) %}
+
+{% elif task_ns.conf_name == "cylinder_xz_adhimex_mol_bigcfl-BiP100x10-20x20" %}
+
+    {% do task_dict.update({
+        "opt_confs": ["cylinder_xz_bigcfl","adhimex_mol"],
+        "resolution": "BiP100x10-20x20",
+        "DT": 50,
+        "tsteps": 40,
+        "mpi_parts": 4,
+        "wallclock": 30,
+        "kgo_checks": [],
+        "plot_str": "spherical_and_vertical_slice_ugrid_plot.py $NODAL_DATA_DIR/lfric_diag.nc $PLOT_DIR theta:tracer_con:tracer_adv:m_v xz all linear cylinder",
+    }) %}
+
 {% elif task_ns.conf_name == "deformation_2d_ffsl_bigcfl-C96" %}
 
     {% do task_dict.update({
@@ -227,19 +253,77 @@
         "mpi_parts": 4,
         "wallclock": 30,
         "kgo_checks": [],
+        "log_level": "info",
         "plot_str": "spherical_and_vertical_slice_ugrid_plot.py $NODAL_DATA_DIR/lfric_diag.nc $PLOT_DIR theta:tracer_con:tracer_adv:m_v xz all linear eternal_fountain",
     }) %}
 
 {% elif task_ns.conf_name == "hadley_dcmip_ffsl_bigcfl-C48" %}
 
     {% do task_dict.update({
-        "opt_confs": ["hadley_dcmip_bigcfl","special_edges"],
+        "opt_confs": ["hadley_dcmip_bigcfl"],
         "resolution": "C48",
         "DT": 3600,
         "tsteps": 24,
         "mpi_parts": 12,
         "wallclock": 30,
         "kgo_checks": [],
+        "log_level": "info",
+        "plot_str": "spherical_and_vertical_slice_ugrid_plot.py $NODAL_DATA_DIR/lfric_diag.nc $PLOT_DIR theta:tracer_con:tracer_adv:m_v yz all linear hadley",
+    }) %}
+
+{% elif task_ns.conf_name == "eternal_fountain_xz_adhimex_bigcfl-BiP100x10-20x20" %}
+
+    {% do task_dict.update({
+        "opt_confs": ["eternal_fountain_xz_bigcfl","adhimex"],
+        "resolution": "BiP100x10-20x20",
+        "DT": 40,
+        "tsteps": 25,
+        "mpi_parts": 4,
+        "wallclock": 30,
+        "kgo_checks": [],
+        "log_level": "info",
+        "plot_str": "spherical_and_vertical_slice_ugrid_plot.py $NODAL_DATA_DIR/lfric_diag.nc $PLOT_DIR theta:tracer_con:tracer_adv:m_v xz all linear eternal_fountain",
+    }) %}
+
+{% elif task_ns.conf_name == "hadley_dcmip_adhimex_bigcfl-C48" %}
+
+    {% do task_dict.update({
+        "opt_confs": ["hadley_dcmip_bigcfl","adhimex"],
+        "resolution": "C48",
+        "DT": 3600,
+        "tsteps": 24,
+        "mpi_parts": 12,
+        "wallclock": 30,
+        "kgo_checks": [],
+        "log_level": "info",
+        "plot_str": "spherical_and_vertical_slice_ugrid_plot.py $NODAL_DATA_DIR/lfric_diag.nc $PLOT_DIR theta:tracer_con:tracer_adv:m_v yz all linear hadley",
+    }) %}
+
+{% elif task_ns.conf_name == "eternal_fountain_xz_adhimex_mol_bigcfl-BiP100x10-20x20" %}
+
+    {% do task_dict.update({
+        "opt_confs": ["eternal_fountain_xz_bigcfl","adhimex_mol"],
+        "resolution": "BiP100x10-20x20",
+        "DT": 40,
+        "tsteps": 25,
+        "mpi_parts": 4,
+        "wallclock": 30,
+        "kgo_checks": [],
+        "log_level": "info",
+        "plot_str": "spherical_and_vertical_slice_ugrid_plot.py $NODAL_DATA_DIR/lfric_diag.nc $PLOT_DIR theta:tracer_con:tracer_adv:m_v xz all linear eternal_fountain",
+    }) %}
+
+{% elif task_ns.conf_name == "hadley_dcmip_adhimex_mol_bigcfl-C48" %}
+
+    {% do task_dict.update({
+        "opt_confs": ["hadley_dcmip_bigcfl","adhimex_mol"],
+        "resolution": "C48",
+        "DT": 3600,
+        "tsteps": 24,
+        "mpi_parts": 12,
+        "wallclock": 30,
+        "kgo_checks": [],
+        "log_level": "info",
         "plot_str": "spherical_and_vertical_slice_ugrid_plot.py $NODAL_DATA_DIR/lfric_diag.nc $PLOT_DIR theta:tracer_con:tracer_adv:m_v yz all linear hadley",
     }) %}
 

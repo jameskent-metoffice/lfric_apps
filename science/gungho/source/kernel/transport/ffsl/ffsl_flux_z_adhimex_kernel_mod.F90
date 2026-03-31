@@ -207,13 +207,13 @@ subroutine ffsl_flux_z_adhimex_code( nlayers,       &
     ! Update total flux
     flux(w2v_idx) = 0.0_r_tran
     do k = 2, nlayers
-      detj_upwind = MAX(0.0_r_tran, SIGN(1.0_r_tran, c_field_s_w2v(k)))   &
-                    * detj(w3_idx + k - 2)                                &
-                    - MIN(0.0_r_tran, SIGN(1.0_r_tran, c_field_s_w2v(k))) &
+      detj_upwind = MAX(0.0_r_tran, SIGN(1.0_r_tran, dep_dist(w2v_idx + k-1)))   &
+                    * detj(w3_idx + k - 2)                                       &
+                    - MIN(0.0_r_tran, SIGN(1.0_r_tran, dep_dist(w2v_idx + k-1))) &
                     * detj(w3_idx + k - 1)
-      flux(w2v_idx + k - 1) = flux(w2v_idx + k - 1) +                     &
-                              ( a_ex(nstages,s) * onemimplness_w2v(k) +   &
-                                a_im(nstages,s) * implness_w2v(k) )       &
+      flux(w2v_idx + k - 1) = flux(w2v_idx + k - 1) +                            &
+                              ( a_ex(nstages,s) * onemimplness_w2v(k) +          &
+                                a_im(nstages,s) * implness_w2v(k) )              &
                               * c_field_s_w2v(k) * detj_upwind / dt
     end do
     flux(w2v_idx + nlayers) = 0.0_r_tran
@@ -628,13 +628,13 @@ end subroutine fct
 !> @param[in]     dep_dist  Courant number at faces
 !> @param[in]     detj      Cell-centred volume
 !> @param[in]     dt        Time step
-subroutine adimex_upwind( nl,        &
-                           field_lo, &
-                           flux_lo,  &
-                           field,    &
-                           dep_dist, &
-                           detj,     &
-                           dt )
+subroutine adimex_upwind( nl,       &
+                          field_lo, &
+                          flux_lo,  &
+                          field,    &
+                          dep_dist, &
+                          detj,     &
+                          dt )
 
   implicit none
 
@@ -806,7 +806,7 @@ subroutine set_extrema( nl,          &
   ! Internal variables
   integer(kind=i_def)  :: k
 
-  if ( MAXVAL(dep_dist) .gt. 1.0_r_tran ) then
+  if ( MAXVAL(abs(dep_dist)) .gt. 1.0_r_tran ) then
     min_allowed(1) = MIN(field_lo(1), field_lo(2))
     max_allowed(1) = MAX(field_lo(1), field_lo(2))
     do k = 2, nl - 1

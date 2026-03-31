@@ -15,7 +15,7 @@ module ffsl_vert_alg_mod
   use function_space_mod,               only: function_space_type
   use function_space_collection_mod,    only: function_space_collection
   use sci_geometric_constants_mod,      only: get_dz_w3
-  use log_mod,                          only: log_event, LOG_LEVEL_ERROR, LOG_LEVEL_DEBUG
+  use log_mod,                          only: log_event, LOG_LEVEL_ERROR
   use sci_field_minmax_alg_mod,         only: log_field_minmax
   use mesh_mod,                         only: mesh_type
   use r_tran_field_mod,                 only: r_tran_field_type
@@ -157,15 +157,11 @@ contains
             mass_flux, field_n, step_dt, transport_controller, order           &
     )
 
-    call log_field_minmax( LOG_LEVEL_DEBUG, "mass flux after vertical transport", mass_flux )
-    call log_event('=========> Back in ffsl_vert_transport_alg', LOG_LEVEL_DEBUG)
-
     splitting = transport_metadata%get_splitting()
     equation_form = transport_metadata%get_equation_form()
 
     ! Compute advected field, if required --------------------------------------
     if (to_compute_adv_inc .or. to_compute_field_np1) then
-      call log_event('=========> In computed advected field or field_np1 logic', LOG_LEVEL_DEBUG)
       ! Get pre-computed objects
       mesh_id = field_n%get_mesh_id()
       mesh => field_n%get_mesh()
@@ -185,7 +181,6 @@ contains
         wind_precomputations => transport_controller%get_wind_precomputations()
         step = transport_counter%get_split_step_of_substep_counter()
       end if
-      call log_event('=========> Got the wind computations bit', LOG_LEVEL_DEBUG)
 
       if (ffsl_unity_3d .or. equation_form == equation_form_consistent) then
         dry_mass_n => ffsl_precomputations%get_ref_mass(mesh_id, step)
@@ -193,41 +188,24 @@ contains
 
         call invoke( fv_difference_z_kernel_type(increment, mass_flux) )
 
-        call log_field_minmax( LOG_LEVEL_DEBUG, "increment", increment )
-        call log_event('=========> After increment in ffsl_unity_3d logic', LOG_LEVEL_DEBUG)
-
         call swift_inner_update_tracer(field_np1, field_n,                     &
                                        dry_mass_np1, dry_mass_n,               &
                                        increment, step_dt)
-
-        call log_field_minmax( LOG_LEVEL_DEBUG, "field_np1", field_np1 )
-        call log_event('=========> After field_np1 in ffsl_unity_3d logic', LOG_LEVEL_DEBUG)
 
         if (to_compute_adv_inc) then
           ! Increment is really a negative increment, so subtract field_np1
           call invoke( X_minus_Y(increment, field_n, field_np1),               &
                        inc_a_times_X(one_over_dt, increment) )
-
-          call log_field_minmax( LOG_LEVEL_DEBUG, "adv increment", increment )
-          call log_event('=========> After adv increment in ffsl_unity_3d logic', LOG_LEVEL_DEBUG)
         end if
 
       else
         adv_one => wind_precomputations%get_adv_unity_z(mesh_id, splitting, step)
 
         call invoke( fv_divergence_z_kernel_type(increment, mass_flux, detj_at_w3) )
-        call log_field_minmax( LOG_LEVEL_DEBUG, "increment", increment )
         ! Get the advective increment from these conservative increments
         call ffsl_advective_increment(increment, field_n, step_dt, adv_one)
-
-        call log_field_minmax( LOG_LEVEL_DEBUG, "adv increment", increment )
-        call log_event('=========> After adv increment in not ffsl_unity_3d logic', LOG_LEVEL_DEBUG)
-
         if (to_compute_field_np1) call invoke( X_minus_bY(field_np1, field_n,  &
                                                           step_dt, increment) )
-
-        call log_field_minmax( LOG_LEVEL_DEBUG, "field_np1", field_np1 )
-        call log_event('=========> After field_np1 in not ffsl_unity_3d logic', LOG_LEVEL_DEBUG)
       end if
     end if
     if ( LPROF ) call stop_timing( id, 'transport.ffsl_vertical' )
@@ -279,6 +257,7 @@ contains
     logical(kind=l_def) :: log_space
     integer(kind=i_def) :: monotone
     logical(kind=l_def) :: reversible
+    logical(kind=l_def) :: monotonicity
     integer(kind=i_def) :: equation_form
     integer(kind=i_def) :: splitting
     logical(kind=l_def) :: first_order_cheap_update
@@ -437,30 +416,21 @@ contains
                                                log_space) )
     case ( 3 )
       ! AdHImEx reconstruction (not actually FFSL)
-      call log_event('=========> We get to the case(3) ', LOG_LEVEL_DEBUG)
-      call log_field_minmax( LOG_LEVEL_DEBUG, "mass flux", mass_flux )
-      call log_field_minmax( LOG_LEVEL_DEBUG, "dep pts", dep_pts_z )
-      call log_field_minmax( LOG_LEVEL_DEBUG, "field", field_n )
-      call log_field_minmax( LOG_LEVEL_DEBUG, "detj", detj_at_w3 )
-
+      if (monotone == monotone_none) then
+        monotonicity = .false.
+      else
+        monotonicity = .true.
+      end if      
       call invoke( ffsl_flux_z_adhimex_kernel_type(mass_flux,                  &
                                                     dep_pts_z,                 &
                                                     field_n,                   &
                                                     detj_at_w3,                &
-                                                    step_dt) )
-
-      call log_event('=========> We have exited the kernel in case(3) ', LOG_LEVEL_DEBUG)
-      call log_field_minmax( LOG_LEVEL_DEBUG, "mass flux", mass_flux )
-      call log_field_minmax( LOG_LEVEL_DEBUG, "dep pts", dep_pts_z )
-      call log_field_minmax( LOG_LEVEL_DEBUG, "field", field_n )
-      call log_field_minmax( LOG_LEVEL_DEBUG, "detj", detj_at_w3 )
+                                                    step_dt,                   &
+                                                    monotonicity) )
 
     case default
       call log_event( "ffsl_1d_vert_flux_alg: order not implemented", LOG_LEVEL_ERROR )
     end select
-
-  call log_field_minmax( LOG_LEVEL_DEBUG, "mass flux after vertical transport", mass_flux )
-  call log_event('=========> End of ffsl_1d_vert_flux_alg ', LOG_LEVEL_DEBUG)
 
   end subroutine ffsl_1d_vert_flux_alg
 

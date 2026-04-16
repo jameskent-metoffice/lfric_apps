@@ -457,13 +457,20 @@ subroutine solve_fifth_order_matrix( nl,           &
   real(kind=r_tran)   :: fieldh(nl + 1)
   real(kind=r_tran)   :: c_fieldh(nl + 1)
   real(kind=r_tran)   :: div(nl)
+  real(kind=r_tran)   :: cfl_w3(nl)
+  integer(kind=i_def) :: k
 
   ! Interpolate guess to faces
   call fifth_order_interp(nl, fieldh, guess, dep_dist) ! out=fieldh (interp guess at faces)
 
   c_fieldh = dep_dist*fieldh
+  !call fluxdiv(nl, c_fieldh, div, implness_w2v) ! outputs div
 
-  call fluxdiv(nl, c_fieldh, div, implness_w2v) ! outputs div
+  do k = 1, nl
+     cfl_w3(k) = (dep_dist(k)*implness_w2v(k)+dep_dist(k+1)*implness_w2v(k+1))/2.0_r_tran
+  end do
+  call advdiff( nl, fieldh(2:nl+1), fieldh(1:nl), &
+                  cfl_w3, div )
 
   lhs = guess - a_im*div
 
@@ -580,14 +587,32 @@ subroutine fct( nl,       &
 
   corr = flux - flux_lo ! flux has units field*w*dx*dy
 
+  ! Set the correction to zero in rare cases
+  if ( ( corr(2)*(field_lo(2) - field_lo(1)) .lt. 0.0_r_tran ) .and.           &
+       ( corr(2)*(field_lo(3) - field_lo(2)) .lt. 0.0_r_tran ) ) then
+    corr(2) = 0.0_r_tran
+  end if
+  do k = 3, nl - 1
+    if ( ( corr(k)*(field_lo(k) - field_lo(k - 1)) .lt. 0.0_r_tran ) .and.     &
+         ( ( corr(k)*(field_lo(k + 1) - field_lo(k)) .lt. 0.0_r_tran ) .or.    &
+         ( corr(k)*(field_lo(k - 1) - field_lo(k - 2)) .lt. 0.0_r_tran ) ) ) then
+      corr(k) = 0.0_r_tran
+    end if
+  end do
+  if ( ( corr(nl)*(field_lo(nl) - field_lo(nl - 1)) .lt. 0.0_r_tran ) .and.    &
+       ( corr(k)*(field_lo(nl - 1) - field_lo(nl - 2)) .lt. 0.0_r_tran ) ) then
+    corr(nl) = 0.0_r_tran
+  end if
+
+
   ! Calculate allowable mass in/out for max rise and fall
   qp = detj*(max_allowed - field_lo)
   qm = detj*(field_lo - min_allowed)
 
   ! Calculate in/out fluxes at cell centers
   do k = 1, nl
-    pp(k) = dt*MAX(0.0_r_tran, corr(k)) - MIN(0.0_r_tran, corr(k + 1))
-    pm(k) = dt*MAX(0.0_r_tran, corr(k + 1)) - MIN(0.0_r_tran, corr(k))
+    pp(k) = dt*(MAX(0.0_r_tran, corr(k)) - MIN(0.0_r_tran, corr(k + 1)))
+    pm(k) = dt*(MAX(0.0_r_tran, corr(k + 1)) - MIN(0.0_r_tran, corr(k)))
   end do
 
   ! Calculate ratios of allowable (Q) to existing high-order (P) fluxes
@@ -658,6 +683,7 @@ subroutine adimex_upwind( nl,       &
   real(kind=r_tran)    :: fieldh_ex(nl + 1)
   real(kind=r_tran)    :: c_fieldh_ex(nl + 1)
   real(kind=r_tran)    :: div_ex(nl)
+  real(kind=r_tran)    :: cfl_w3(nl)
   logical(kind=l_def)  :: bool_gcrk_fct
 
   zero = 0.0_r_tran
@@ -680,7 +706,14 @@ subroutine adimex_upwind( nl,       &
   c_fieldh_ex = dep_dist*fieldh_ex
 
   ! Calculate explicit flux divergence
-  call fluxdiv(nl, c_fieldh_ex, div_ex, 1.0_r_tran - implness_1st_w2v)
+  !call fluxdiv(nl, c_fieldh_ex, div_ex, 1.0_r_tran - implness_1st_w2v)
+
+  do k = 1, nl
+     cfl_w3(k) = (dep_dist(k)*(1.0_r_tran - implness_1st_w2v(k)) + &
+                  dep_dist(k+1)*(1.0_r_tran - implness_1st_w2v(k+1)))/2.0_r_tran
+  end do
+  call advdiff( nl, fieldh_ex(2:nl+1), fieldh_ex(1:nl), &
+                cfl_w3, div_ex )
 
   ! Calculate first-order explicit RHS
   rhs = field + div_ex
@@ -766,13 +799,20 @@ subroutine solve_first_order_matrix( nl,           &
   real(kind=r_tran)   :: fieldh(nl + 1)
   real(kind=r_tran)   :: c_fieldh(nl + 1)
   real(kind=r_tran)   :: div(nl)
+  real(kind=r_tran)   :: cfl_w3(nl)
+  integer(kind=i_def) :: k
 
   ! Interpolate guess to faces
   call first_order_interp(nl, fieldh, guess, dep_dist) ! out=fieldh (interp guess at faces)
 
   c_fieldh = dep_dist*fieldh
+  !call fluxdiv(nl, c_fieldh, div, implness_1st_w2v) ! outputs div
 
-  call fluxdiv(nl, c_fieldh, div, implness_1st_w2v) ! outputs div
+  do k = 1, nl
+     cfl_w3(k) = (dep_dist(k)*implness_1st_w2v(k)+dep_dist(k+1)*implness_1st_w2v(k+1))/2.0_r_tran
+  end do
+  call advdiff( nl, fieldh(2:nl+1), fieldh(1:nl), &
+                cfl_w3, div )
 
   lhs = guess - div
 

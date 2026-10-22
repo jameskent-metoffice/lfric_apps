@@ -135,6 +135,10 @@
     {% do task_dict.update({"river_threads": 1}) %}
 {% endif %}
 
+{% if "no_rivers" not in task_dict %}
+    {% do task_dict.update({"no_rivers": false}) %}
+{% endif %}
+
 {% if "river_make_dir" not in task_dict %}
     {% do task_dict.update({"river_make_dir": "$CYLC_WORKFLOW_SHARE_DIR/"~
                                               "fcm_make_lfric_atm_river_"~

@@ -73,7 +73,7 @@
             RIVER_NPROC = {{task_values["river_nproc"]}}
             RIVER_DATA = {{history_dir}}/{{task_values["river_rst"]}}
             RIV_NUMBER_ANCILLARY = {{task_values["riv_number_ancillary"]}}
-{% if continuation %}
+{% if continuation and not task_values["no_rivers"] %}
             RIVER_START = $(ls -1t $RIVER_DATA/*.dump.*.nc 2>/dev/null | head -n 1)
             RIVER_STORAGE_FILE =
 {% else %}

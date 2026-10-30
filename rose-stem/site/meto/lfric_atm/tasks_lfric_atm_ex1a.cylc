@@ -100,7 +100,11 @@
 
 {% if build_dict.get("coupled", false) %}
     {% do task_dict.update({"build_families": ["EX1A_BUILD_COUPLED_"~task_ns.compiler|upper]}) %}
-    {% do task_dict.update({"run_families": ["EX1A_RUN_COUPLED_"~task_ns.compiler|upper]}) %}
+    {% if "orca1" in task_dict.get("opt_confs", []) %}
+        {% do task_dict.update({"run_families": ["EX1A_RUN_COUPLED_ORCA1_"~task_ns.compiler|upper]}) %}
+    {% else %}
+        {% do task_dict.update({"run_families": ["EX1A_RUN_COUPLED_"~task_ns.compiler|upper]}) %}
+    {% endif %}
 {% endif %}
 
 {% do LOG.debug("Finised in site/meto/lfric_atm/tasks_lfric_atm_ex1a.cylc") %}

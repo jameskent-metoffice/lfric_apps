@@ -121,6 +121,12 @@
         'cp $CYLC_TASK_WORK_DIR/timer.txt $TASK_OUTPUT_DIR || true'
     ] %}
 
+{# Post-script does not run when the main script fails, so copy the logs needed for diagnosis on failure #}
+{% set err_script_commands = [
+    'find . -regex ".*PET0+\..+\.Log" -exec cp {} $CYLC_TASK_LOG_DIR \;',
+    'find . -name ocean.output -exec cp {} $CYLC_TASK_LOG_DIR \;'
+    ] %}
+
 {# Check to see if it is a Perftools application run, as we need to change the binary target#}
 {% set PAT_EXE_EXTEN ='' %}
 {% if SITE~"-"~task_ns.platform == 'meto-ex1a' %}
@@ -134,6 +140,7 @@
         inherit = {{task_family|upper}}, {{resource_family|upper}}
         script = {{script_str.name}}
         {{ generate_script("post-script", post_script_commands) }}
+        {{ generate_script("err-script", err_script_commands) }}
         [[[environment]]]
             DESTINATION_DIRECTORY   = {{destination_dir}}
             APPS_ROOT_DIR           = $SOURCE_ROOT/lfric_apps

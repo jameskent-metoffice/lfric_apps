@@ -1255,6 +1255,33 @@
         "xios_print_file": ".true.",
     }) %}
 
+{% elif task_ns.conf_name == "nwp_gc6-C48_ORCA1_MG" %}
+
+    {# Start from rest: the default ORCA025 NEMO and SI3 restarts are on a different grid #}
+    {% do task_dict.update({
+        "opt_confs": ["coupled","no_dust","um_dump","orca1"],
+        "resolution": "C48_MG",
+        "DT": 1800,
+        "tsteps": 24,
+        "crun": 2,
+        "mpi_parts": 24,
+        "threads": 1,
+        "tmpsize": [12, "GB"],
+        "kgo_checks": ["checksum"],
+        "xios_nodes": 1,
+        "mpi_parts_xios": 6,
+        "coupled": true,
+        "wallclock": 20,
+        "plot_str": "plot_map.py $NODAL_DATA_DIR/lfric_diagnostics.nc  $PLOT_DIR",
+        "app_name": "lfric_atm_coupled",
+        "xios_info_level": 1,
+        "xios_print_file": ".true.",
+        "river_start": "/data/users/zoe.plain/C48_eORCA1/rivers/river_stor_zero_28343.nc",
+        "riv_number_ancillary": "/data/users/zoe.plain/C48_eORCA1/rivers",
+        "nemo_start": "",
+        "si3_start": "",
+    }) %}
+
 {% elif task_ns.conf_name == "canned" %}
 
     {% do task_dict.update({

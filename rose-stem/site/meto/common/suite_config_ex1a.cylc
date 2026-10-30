@@ -35,6 +35,9 @@
 {% set ex1a_coupled_run = '. $BIG_DATA_DIR/ancils/lfric_coupled/ocean/ocean_ancil_GO8p0_CORE_forcing_eORCA025 ; ' ~
                           'DIAG_MEAN_PERIOD="INVALID_PERIOD"'%}
 
+{% set ex1a_coupled_run_orca1 = '. /data/users/zoe.plain/ancils/forcing/eORCA1/ocean_ancil_GO8p0_CORE_forcing_eORCA1 ; ' ~
+                                'DIAG_MEAN_PERIOD="INVALID_PERIOD"'%}
+
 {% set set_ulimit = 'ulimit -s unlimited -c unlimited; '~
                     'ulimit -a '%}
 
@@ -127,6 +130,15 @@
                                           ex1a_coupled_cce,
                                           ex1a_scitools,
                                           ex1a_coupled_run,
+                                          set_ulimit]) }}
+
+    [[EX1A_RUN_COUPLED_ORCA1_CCE]]
+        inherit=EX1A_BASE,EX1A_RUN,EX1A_CCE
+        {{ generate_script("pre-script", [ex1a_base,
+                                          ex1a_compiler_cce,
+                                          ex1a_coupled_cce,
+                                          ex1a_scitools,
+                                          ex1a_coupled_run_orca1,
                                           set_ulimit]) }}
 
     [[EX1A_RUN_PERFTOOLS-GNU]]

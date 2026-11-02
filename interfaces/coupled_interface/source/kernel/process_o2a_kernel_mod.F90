@@ -129,6 +129,8 @@ subroutine process_o2a_code(nlayers, sea_surf_temp, sea_surf_temp_pert, &
   real(kind=r_def), parameter :: ti_max = zero_C_in_K
   ! Minimum sea ice layer temperature allowed through the coupler
   real(kind=r_def), parameter :: ti_min = 200.0_r_def
+  ! Maximum sea ice conductivity (taken from the UM reconfiguration value)
+  real(kind=r_def), parameter :: max_ice_cond = 25.0_r_def
 
   ! Local variables
   integer(kind=i_def) :: i
@@ -214,6 +216,18 @@ subroutine process_o2a_code(nlayers, sea_surf_temp, sea_surf_temp_pert, &
                                               * recip_sea_ice_fraction
           sea_ice_conductivity(map_ice(1)+i) = sea_ice_conductivity(map_ice(1)+i)&
                                               * recip_sea_ice_fraction
+
+          ! SI3 only has a conductivity once it has taken a thermodynamic step,
+          ! so a cold start (or a restart without cnd_ice) sends zero under
+          ! sea ice. Apply the default used to initialise sea-ice conductivity.
+          if ( sea_ice_conductivity(map_ice(1) + i) <= 0.0_r_def ) then
+            if ( sea_ice_thickness(map_ice(1) + i) > 0.0_r_def ) then
+              sea_ice_conductivity(map_ice(1) + i) = min(max_ice_cond,         &
+                    8.0_r_def * therm_cond_sice / sea_ice_thickness(map_ice(1) + i))
+            else
+              sea_ice_conductivity(map_ice(1) + i) = max_ice_cond
+            end if
+          end if
 
           if (melt_pond_fraction(map_ice(1) + i) > 0.0_r_def ) then
             recip_gbm_melt_pond_fraction = 1.0_r_def / &

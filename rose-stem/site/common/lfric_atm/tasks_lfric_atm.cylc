@@ -1272,6 +1272,7 @@
         "mpi_parts_xios": 6,
         "coupled": true,
         "wallclock": 20,
+        "log_level": "debug",
         "plot_str": "plot_map.py $NODAL_DATA_DIR/lfric_diagnostics.nc  $PLOT_DIR",
         "app_name": "lfric_atm_coupled",
         "xios_info_level": 1,

@@ -117,6 +117,9 @@
 
 {# ###################################################################### #}
 {# EX1A Test Groups #}
+{# lfric_atm_coupled_cama_ex1a is the coupled model with CaMa-Flood in place #}
+{# of the JULES river model. It needs the CaMa-Flood data described in #}
+{# interfaces/cama_interface/README.md, so it is not in a developer group. #}
 {# ###################################################################### #}
 {% do site_groups.update({
     "lfric_atm_nwp_ex1a_developer": [
@@ -192,6 +195,9 @@
     "lfric_atm_coupled_ex1a_developer": [
         "lfric_atm_nwp_gc6-C48_MG_ex1a_cce_coupled-fast-debug-32bit",
         "lfric_atm_clim_gc6-C48_MG_ex1a_cce_coupled-fast-debug-32bit",
+    ],
+    "lfric_atm_coupled_cama_ex1a": [
+        "lfric_atm_nwp_gc6_cama-C48_MG_ex1a_cce_coupled-fast-debug-32bit",
     ],
     "lfric_atm_ex1a_developer": [
         "lfric_atm_nwp_ex1a_developer",

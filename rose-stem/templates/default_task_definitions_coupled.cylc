@@ -9,6 +9,85 @@
     {% do task_dict.update({"calendar": "360day"}) %}
 {% endif %}
 
+{# CaMa-Flood replaces the JULES river model when "cama" is true. #}
+{# The files of CaMa-Flood are described in #}
+{# interfaces/cama_interface/README.md #}
+{% if "cama" not in task_dict %}
+    {% do task_dict.update({"cama": false}) %}
+{% endif %}
+
+{# Caution: This default assumes running at the MO #}
+{# The CaMa-Flood map directory, with nextxy.bin, ctmare.bin, etc #}
+{% if "cama_map_dir" not in task_dict %}
+    {% do task_dict.update({"cama_map_dir": "$BIG_DATA_DIR/ancils/cama/glb_15min"}) %}
+{% endif %}
+
+{# The grid of the CaMa-Flood map, which is also the grid of its runoff #}
+{% if "cama_nx" not in task_dict %}
+    {% do task_dict.update({"cama_nx": 1440}) %}
+{% endif %}
+
+{% if "cama_ny" not in task_dict %}
+    {% do task_dict.update({"cama_ny": 720}) %}
+{% endif %}
+
+{% if "cama_nlfp" not in task_dict %}
+    {% do task_dict.update({"cama_nlfp": 10}) %}
+{% endif %}
+
+{% if "cama_west" not in task_dict %}
+    {% do task_dict.update({"cama_west": -180}) %}
+{% endif %}
+
+{% if "cama_east" not in task_dict %}
+    {% do task_dict.update({"cama_east": 180}) %}
+{% endif %}
+
+{% if "cama_north" not in task_dict %}
+    {% do task_dict.update({"cama_north": 90}) %}
+{% endif %}
+
+{% if "cama_south" not in task_dict %}
+    {% do task_dict.update({"cama_south": -90}) %}
+{% endif %}
+
+{% if "cama_make_dir" not in task_dict %}
+    {% do task_dict.update({"cama_make_dir": "$CYLC_WORKFLOW_SHARE_DIR/"~
+                                             "fcm_make_lfric_atm_cama_"~
+                                             task_ns.platform~"_"~
+                                             task_dict["build_conf"]}) %}
+{% endif %}
+
+{% if "cama_rst" not in task_dict %}
+    {% do task_dict.update({"cama_rst": "CAMAhist"}) %}
+{% endif %}
+
+{# Caution: This default assumes running at the MO #}
+{# The remapping weights of the coupled model. cama_prepare.sh links these #}
+{# with the weights in cama_rmp_dir, which replace those of the JULES river #}
+{# model that are kept in the same directory #}
+{% if "cama_rmp_base" not in task_dict %}
+    {% do task_dict.update({"cama_rmp_base": "$BIG_DATA_DIR/ancils/basic-gc/Ticket147/C48/n96e/orca025/remapping_weights"}) %}
+{% endif %}
+
+{# Caution: This default assumes running at the MO #}
+{# The directory with the weights from LFRic to the CaMa-Flood grid, #}
+{# rmp_lfricT_to_camaT_conservative1st_dstarea_nomask.nc #}
+{% if "cama_rmp_dir" not in task_dict %}
+    {% do task_dict.update({"cama_rmp_dir": "$BIG_DATA_DIR/ancils/cama/remapping_weights"}) %}
+{% endif %}
+
+{# Caution: This default assumes running at the MO #}
+{# NEMO river number on the CaMa-Flood grid, from make_cama_ancils.py #}
+{% if "cama_river_number_file" not in task_dict %}
+    {% do task_dict.update({"cama_river_number_file": "$BIG_DATA_DIR/ancils/cama/glb_15min_river_number.bin"}) %}
+{% endif %}
+
+{# CaMa-Flood restart file, or empty to start from zero storage #}
+{% if "cama_start" not in task_dict %}
+    {% do task_dict.update({"cama_start": ""}) %}
+{% endif %}
+
 {% if "datam" not in task_dict %}
     {% do task_dict.update({"datam": "History_Data"}) %}
 {% endif %}

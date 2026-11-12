@@ -11,9 +11,9 @@
 
 {% set task_app = "fcm_make_"~task_ns.conf_name %}
 
-{% if task.startswith("fcm_make2") or task_ns.conf_name == "river" %}
-{# The final build step - either the fcm_make2 task or fcm_make_rivers #}
-{# which only uses a single step build #}
+{% if task.startswith("fcm_make2") or task_ns.conf_name in ["river", "cama"] %}
+{# The final build step - either the fcm_make2 task or fcm_make_river or #}
+{# fcm_make_cama which only use a single step build #}
 
     {# Generate a resource family for the task #}
     {% set resource_family = task~"_resources" %}

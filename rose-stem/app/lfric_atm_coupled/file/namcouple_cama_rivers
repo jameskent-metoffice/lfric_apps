@@ -1,0 +1,38 @@
+######################################################
+################## ATMOS TO RIVER ####################
+######################################################
+# The river model is CaMa-Flood, which receives runoff on its own map grid
+# camaT with @CAMA_NX@ x @CAMA_NY@ points (first row in the north). The weights
+# are generated for that grid (see interfaces/cama_interface/README.md).
+# Surface runoff (lfric) => rivers
+lf_rsurf surf_roff 466 3600 1 atmos_restart.nc   EXPORTED
+13824 1 @CAMA_NX@ @CAMA_NY@ lfricT camaT SEQ=+4
+P  0  P  0
+#
+MAPPING
+##
+rmp_lfricT_to_camaT_conservative1st_dstarea_nomask.nc
+#######################################################
+# Sub-surface runoff (lfric) => rivers
+lf_rsub sub_surf_roff 466 3600 1 atmos_restart.nc   EXPORTED
+13824 1 @CAMA_NX@ @CAMA_NY@ lfricT camaT SEQ=+4
+P  0  P  0
+#
+MAPPING
+##
+rmp_lfricT_to_camaT_conservative1st_dstarea_nomask.nc
+######################################################
+############### RIVER TO OCEAN #######################
+######################################################
+# River runoff
+outflow_per_river ORunff1D 466 3600 1 atmos_restart.nc  EXPORTED
+1681 1 1681 1 riv3 riv3 SEQ=+3
+R  0  R  0
+#
+BLASOLD
+##
+1.0 0
+#############################################################################
+#############################################################################
+#
+$END

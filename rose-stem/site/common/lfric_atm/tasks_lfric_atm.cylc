@@ -1399,6 +1399,33 @@
         "xios_print_file": ".true.",
     }) %}
 
+{% elif task_ns.conf_name == "nwp_gc6_cama-C48_MG" %}
+
+    {# As nwp_gc6-C48_MG, but CaMa-Flood replaces the JULES river model. #}
+    {# The CaMa-Flood files are described in interfaces/cama_interface/README.md. #}
+    {# There are no known good output files yet: once the test has run, set #}
+    {# kgo_checks to ["checksum"] and add the checksum. #}
+    {% do task_dict.update({
+        "opt_confs": ["coupled","no_dust","um_dump","cama"],
+        "resolution": "C48_MG",
+        "DT": 1800,
+        "tsteps": 24,
+        "crun": 2,
+        "mpi_parts": 24,
+        "threads": 1,
+        "tmpsize": [12, "GB"],
+        "kgo_checks": [],
+        "xios_nodes": 1,
+        "mpi_parts_xios": 6,
+        "coupled": true,
+        "cama": true,
+        "wallclock": 10,
+        "plot_str": "plot_map.py $NODAL_DATA_DIR/lfric_diagnostics.nc  $PLOT_DIR",
+        "app_name": "lfric_atm_coupled",
+        "xios_info_level": 1,
+        "xios_print_file": ".true.",
+    }) %}
+
 {% elif task_ns.conf_name == "clim_gc6-C48_MG" %}
 
     {% do task_dict.update({

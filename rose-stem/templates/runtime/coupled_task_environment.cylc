@@ -81,6 +81,32 @@
             RIVER_STORAGE_FILE = {{task_values["river_storage_ancil"]}}
 {% endif %}
 
+{# CaMa-Flood river model environment variables #}
+
+{% if task_values["cama"] %}
+            ROSE_LAUNCHER_PREOPTS_CAMA = -n 1 -ppn 1
+            CAMA_MAKE_DIR = {{task_values["cama_make_dir"]}}
+            CAMA_EXEC = $CAMA_MAKE_DIR/build/bin/cama.exe
+            CAMA_DATA = {{history_dir}}/{{task_values["cama_rst"]}}
+            CAMA_MAP_DIR = {{task_values["cama_map_dir"]}}
+            CAMA_NX = {{task_values["cama_nx"]}}
+            CAMA_NY = {{task_values["cama_ny"]}}
+            CAMA_NLFP = {{task_values["cama_nlfp"]}}
+            CAMA_WEST = {{task_values["cama_west"]}}
+            CAMA_EAST = {{task_values["cama_east"]}}
+            CAMA_NORTH = {{task_values["cama_north"]}}
+            CAMA_SOUTH = {{task_values["cama_south"]}}
+            CAMA_RIVER_NUMBER_FILE = {{task_values["cama_river_number_file"]}}
+            CAMA_RMP_BASE = {{task_values["cama_rmp_base"]}}
+            CAMA_RMP_DIR = {{task_values["cama_rmp_dir"]}}
+            CAMA_RMP_MERGED = $CYLC_TASK_WORK_DIR/rmp_cama
+    {% if continuation %}
+            CAMA_START = $(ls -1t $CAMA_DATA/restart*.bin 2>/dev/null | head -n 1)
+    {% else %}
+            CAMA_START = {{task_values["cama_start"]}}
+    {% endif %}
+{% endif %}
+
 {# other environment variables #}
 
             ROSE_LAUNCHER_PREOPTS_LFRIC = -n {{task_values["mpi_parts"]}} -ppn 24

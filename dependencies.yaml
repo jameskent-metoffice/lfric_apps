@@ -17,6 +17,12 @@
 # by default, which will cause the test suite to use the source code from the
 # local clone. These can be filled to set a different source if desired.
 
+CaMa-Flood_v4:
+    source: git@github.com:global-hydrodynamics/CaMa-Flood_v4.git
+    parent: global-hydrodynamics/CaMa-Flood_v4.git
+    # v4.31
+    ref: e47a5c412ff21b5d74b0f83aaa543fcc3c488c4c
+
 casim:
     source: git@github.com:MetOffice/casim.git
     ref: 996db30c2bac55360623eb081b4d2e273289f4de

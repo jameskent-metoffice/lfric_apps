@@ -30,11 +30,19 @@
     {% do tasks_to_run.update({build2_drivers_task: task_values}) %}
 {% endif %}
 
-{% set build_river_task = "fcm_make_"~
-                          task_ns.application~
-                          "_river_"~
-                          task_ns.platform~"_"~
-                          task_values["build_conf"] %}
+{% if task_values["cama"] %}
+    {% set build_river_task = "fcm_make_"~
+                              task_ns.application~
+                              "_cama_"~
+                              task_ns.platform~"_"~
+                              task_values["build_conf"] %}
+{% else %}
+    {% set build_river_task = "fcm_make_"~
+                              task_ns.application~
+                              "_river_"~
+                              task_ns.platform~"_"~
+                              task_values["build_conf"] %}
+{% endif %}
 {% if build_river_task not in tasks_to_run %}
     {% do tasks_to_run.update({build_river_task: task_values}) %}
 {% endif %}
